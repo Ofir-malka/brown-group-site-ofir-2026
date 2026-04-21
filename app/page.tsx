@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -105,7 +105,16 @@ const featuredImageNotes: Record<string, string> = {
   "gindi-tlv-rent": "נוף פתוח • מרפסת גדולה • פרויקט יוקרתי",
 };
 
+const revealUp = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.2 },
+  transition: { duration: 0.65, ease: "easeOut" as const },
+};
+
 export default function RealEstateAIWebsite() {
+  const shouldReduceMotion = useReducedMotion();
+
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
@@ -165,16 +174,18 @@ export default function RealEstateAIWebsite() {
   }, []);
 
   useEffect(() => {
-    if (!heroImages.length) return;
+    if (!heroImages.length || shouldReduceMotion) return;
 
     const interval = setInterval(() => {
       setActiveHeroImage((prev) => (prev + 1) % heroImages.length);
     }, 6000);
 
     return () => clearInterval(interval);
-  }, [heroImages.length]);
+  }, [heroImages.length, shouldReduceMotion]);
 
   useEffect(() => {
+    if (shouldReduceMotion) return;
+
     const intervals: ReturnType<typeof setInterval>[] = [];
 
     featuredProperties.forEach((property) => {
@@ -194,7 +205,7 @@ export default function RealEstateAIWebsite() {
     return () => {
       intervals.forEach((interval) => clearInterval(interval));
     };
-  }, [propertyImagesMap, pausedSliders]);
+  }, [propertyImagesMap, pausedSliders, shouldReduceMotion]);
 
   const popupImages = useMemo(
     () => selectedProperty?.images?.filter(Boolean) || [],
@@ -202,7 +213,7 @@ export default function RealEstateAIWebsite() {
   );
 
   useEffect(() => {
-    if (!popupImages.length) return;
+    if (!popupImages.length || shouldReduceMotion) return;
 
     setActivePopupImage(0);
 
@@ -211,7 +222,18 @@ export default function RealEstateAIWebsite() {
     }, 3200);
 
     return () => clearInterval(interval);
-  }, [popupImages]);
+  }, [popupImages, shouldReduceMotion]);
+
+  useEffect(() => {
+    if (!selectedProperty) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [selectedProperty]);
 
   const nextPopupImage = () => {
     if (!popupImages.length) return;
@@ -246,7 +268,7 @@ export default function RealEstateAIWebsite() {
 
     const encodedText = encodeURIComponent(text);
     const url = `https://wa.me/${whatsappNumber}?text=${encodedText}`;
-    window.open(url, "_blank");
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const sendChatMessage = async () => {
@@ -325,41 +347,46 @@ export default function RealEstateAIWebsite() {
           </Link>
 
           <nav className="hidden items-center gap-3 md:flex">
-  <a
-    href="#about"
-    className="inline-flex items-center gap-2 rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
-  >
-    אודות
-  </a>
+            <a
+              href="#about"
+              className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
+            >
+              <span className="relative z-10">אודות</span>
+              <span className="absolute inset-x-3 bottom-1 h-px origin-right scale-x-0 bg-[#d9873b] transition-transform duration-300 group-hover:scale-x-100" />
+            </a>
 
-  <a
-    href="#ai"
-    className="inline-flex items-center gap-2 rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
-  >
-    פתרונות AI
-  </a>
+            <a
+              href="#ai"
+              className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
+            >
+              <span className="relative z-10">פתרונות AI</span>
+              <span className="absolute inset-x-3 bottom-1 h-px origin-right scale-x-0 bg-[#d9873b] transition-transform duration-300 group-hover:scale-x-100" />
+            </a>
 
-  <Link
-    href="/properties/sale"
-    className="inline-flex items-center gap-2 rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
-  >
-    נכסים למכירה
-  </Link>
+            <Link
+              href="/properties/sale"
+              className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
+            >
+              <span className="relative z-10">נכסים למכירה</span>
+              <span className="absolute inset-x-3 bottom-1 h-px origin-right scale-x-0 bg-[#d9873b] transition-transform duration-300 group-hover:scale-x-100" />
+            </Link>
 
-  <Link
-    href="/properties/rent"
-    className="inline-flex items-center gap-2 rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
-  >
-    נכסים להשכרה
-  </Link>
+            <Link
+              href="/properties/rent"
+              className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
+            >
+              <span className="relative z-10">נכסים להשכרה</span>
+              <span className="absolute inset-x-3 bottom-1 h-px origin-right scale-x-0 bg-[#d9873b] transition-transform duration-300 group-hover:scale-x-100" />
+            </Link>
 
-  <a
-    href="#contact"
-    className="inline-flex items-center gap-2 rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
-  >
-    צור קשר
-  </a>
-</nav>
+            <a
+              href="#contact"
+              className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
+            >
+              <span className="relative z-10">צור קשר</span>
+              <span className="absolute inset-x-3 bottom-1 h-px origin-right scale-x-0 bg-[#d9873b] transition-transform duration-300 group-hover:scale-x-100" />
+            </a>
+          </nav>
 
           <div className="hidden md:block">
             <a
@@ -381,10 +408,10 @@ export default function RealEstateAIWebsite() {
               src={heroImages[activeHeroImage]}
               alt="Brown Group Hero"
               className="absolute inset-0 h-full w-full object-cover"
-              initial={{ opacity: 0, scale: 1.08 }}
+              initial={shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.03 }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
+              exit={shouldReduceMotion ? {} : { opacity: 0, scale: 1.02 }}
+              transition={{ duration: 1.1, ease: "easeOut" }}
             />
           </AnimatePresence>
 
@@ -396,21 +423,13 @@ export default function RealEstateAIWebsite() {
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <motion.div
             className="absolute right-[8%] top-[18%] h-[340px] w-[340px] rounded-full bg-[#d9873b]/20 blur-3xl"
-            animate={{ y: [0, -20, 0], x: [0, 12, 0] }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+            animate={shouldReduceMotion ? undefined : { y: [0, -20, 0], x: [0, 12, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
             className="absolute left-[8%] bottom-[12%] h-[280px] w-[280px] rounded-full bg-white/10 blur-3xl"
-            animate={{ y: [0, 18, 0], x: [0, -10, 0] }}
-            transition={{
-              duration: 9,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+            animate={shouldReduceMotion ? undefined : { y: [0, 18, 0], x: [0, -10, 0] }}
+            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
 
@@ -475,33 +494,33 @@ export default function RealEstateAIWebsite() {
             </div>
 
             <div className="mt-12 grid max-w-xl grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="group rounded-[30px] border border-white/10 bg-white/10 p-6 text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#d9873b] hover:shadow-[0_20px_50px_rgba(15,23,42,0.28)]">
-                <div className="mb-4 h-1.5 w-10 rounded-full bg-[#d9873b] transition-all duration-300 group-hover:w-16" />
-                <div className="text-3xl font-semibold tracking-tight">
-                  קנייה ומכירה
+              {[
+                {
+                  title: "קנייה ומכירה",
+                  text: "ליווי מלא לעסקאות נדל״ן מהשלב הראשון ועד הסגירה",
+                },
+                {
+                  title: "השכרה וניהול",
+                  text: "איתור שוכרים איכותיים וניהול נכסים בראש שקט",
+                },
+                {
+                  title: "24/7",
+                  text: "זמינות מלאה לכל לקוח, בכל זמן",
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className="group rounded-[30px] border border-white/10 bg-white/10 p-6 text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#d9873b] hover:shadow-[0_20px_50px_rgba(15,23,42,0.28)]"
+                >
+                  <div className="mb-4 h-1.5 w-10 rounded-full bg-[#d9873b] transition-all duration-300 group-hover:w-16" />
+                  <div className="text-3xl font-semibold tracking-tight">
+                    {item.title}
+                  </div>
+                  <div className="mt-3 text-sm leading-7 text-white/70">
+                    {item.text}
+                  </div>
                 </div>
-                <div className="mt-3 text-sm leading-7 text-white/70">
-                  ליווי מלא לעסקאות נדל״ן מהשלב הראשון ועד הסגירה
-                </div>
-              </div>
-
-              <div className="group rounded-[30px] border border-white/10 bg-white/10 p-6 text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#d9873b] hover:shadow-[0_20px_50px_rgba(15,23,42,0.28)]">
-                <div className="mb-4 h-1.5 w-10 rounded-full bg-[#d9873b] transition-all duration-300 group-hover:w-16" />
-                <div className="text-3xl font-semibold tracking-tight">
-                  השכרה וניהול
-                </div>
-                <div className="mt-3 text-sm leading-7 text-white/70">
-                  איתור שוכרים איכותיים וניהול נכסים בראש שקט
-                </div>
-              </div>
-
-              <div className="group rounded-[30px] border border-white/10 bg-white/10 p-6 text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#d9873b] hover:shadow-[0_20px_50px_rgba(15,23,42,0.28)]">
-                <div className="mb-4 h-1.5 w-10 rounded-full bg-[#d9873b] transition-all duration-300 group-hover:w-16" />
-                <div className="text-3xl font-semibold tracking-tight">24/7</div>
-                <div className="mt-3 text-sm leading-7 text-white/70">
-                  זמינות מלאה לכל לקוח, בכל זמן
-                </div>
-              </div>
+              ))}
             </div>
           </motion.div>
 
@@ -595,7 +614,11 @@ export default function RealEstateAIWebsite() {
         </div>
       </section>
 
-      <section id="about" className="mx-auto max-w-7xl px-6 py-24">
+      <motion.section
+        id="about"
+        className="mx-auto max-w-7xl px-6 py-24"
+        {...revealUp}
+      >
         <div className="grid gap-14 md:grid-cols-2 md:items-start">
           <div>
             <div className="text-sm font-medium uppercase tracking-[0.24em] text-[#d9873b]">
@@ -638,9 +661,13 @@ export default function RealEstateAIWebsite() {
                 title: "חשיבה חכמה לכל עסקה",
                 text: "שילוב בין ניסיון תיווך, ניתוח הזדמנויות וגישה מדויקת יותר לניהול משא ומתן וסגירת עסקאות.",
               },
-            ].map((item) => (
-              <div
+            ].map((item, index) => (
+              <motion.div
                 key={item.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{ duration: 0.45, delay: index * 0.06 }}
                 className="group rounded-[28px] border border-neutral-200 bg-white p-7 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:border-[#d9873b] hover:shadow-[0_20px_45px_rgba(15,23,42,0.10)]"
               >
                 <div className="mb-4 h-1.5 w-10 rounded-full bg-[#d9873b] opacity-70 transition-all duration-300 group-hover:w-16" />
@@ -650,14 +677,33 @@ export default function RealEstateAIWebsite() {
                 <p className="mt-3 text-sm leading-7 text-neutral-600">
                   {item.text}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section id="ai" className="bg-[#fffaf5] py-24">
-        <div className="mx-auto max-w-7xl px-6">
+      <div className="relative h-16 overflow-hidden bg-white">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d9873b]/30 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#d9873b]/25 to-transparent" />
+        <motion.div
+          className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d9873b]/10 blur-2xl"
+          animate={shouldReduceMotion ? undefined : { scale: [1, 1.08, 1] }}
+          transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </div>
+
+      <motion.section
+        id="ai"
+        className="relative overflow-hidden bg-[#fffaf5] py-24"
+        {...revealUp}
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute right-[8%] top-[10%] h-40 w-40 rounded-full bg-[#d9873b]/10 blur-3xl" />
+          <div className="absolute left-[10%] bottom-[10%] h-44 w-44 rounded-full bg-[#f1d0aa]/20 blur-3xl" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-6">
           <div className="max-w-3xl">
             <div className="text-sm font-medium uppercase tracking-[0.24em] text-[#d9873b]">
               AI Solutions
@@ -677,9 +723,13 @@ export default function RealEstateAIWebsite() {
           </div>
 
           <div className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {aiBlocks.map((item) => (
-              <div
+            {aiBlocks.map((item, index) => (
+              <motion.div
                 key={item.name}
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.5, delay: index * 0.07 }}
                 className="group rounded-[30px] border border-[#f3e3d2] bg-white p-7 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-[#d9873b] hover:shadow-[0_20px_45px_rgba(15,23,42,0.10)]"
               >
                 <div className="mb-5 flex items-center justify-between">
@@ -694,23 +744,23 @@ export default function RealEstateAIWebsite() {
                 </p>
 
                 <div className="mt-6 h-1.5 w-10 rounded-full bg-[#d9873b] opacity-60 transition-all duration-300 group-hover:w-16" />
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       <section className="mx-auto max-w-7xl px-6 py-24">
-        <div className="text-center max-w-2xl mx-auto">
-          <div className="text-sm uppercase tracking-[0.25em] text-[#d9873b] font-medium">
+        <div className="mx-auto max-w-2xl text-center">
+          <div className="text-sm font-medium uppercase tracking-[0.25em] text-[#d9873b]">
             Why Brown Group
           </div>
 
-          <h2 className="mt-5 text-4xl md:text-5xl font-semibold tracking-tight">
+          <h2 className="mt-5 text-4xl font-semibold tracking-tight md:text-5xl">
             למה לבחור ב־Brown Group
           </h2>
 
-          <p className="mt-6 text-lg text-neutral-600 leading-8">
+          <p className="mt-6 text-lg leading-8 text-neutral-600">
             שילוב של ניסיון, הבנה עמוקה של השוק המקומי ושירות אישי ברמה גבוהה,
             כדי להוביל כל עסקה בצורה מדויקת ונכונה.
           </p>
@@ -822,16 +872,14 @@ export default function RealEstateAIWebsite() {
                       src={currentImage || safeImages[0]}
                       alt={property.title}
                       className="absolute inset-0 h-full w-full object-cover"
-                      initial={{ opacity: 0, scale: 1.08 }}
+                      initial={shouldReduceMotion ? false : { opacity: 0, scale: 1.05 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 1.04 }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
+                      exit={shouldReduceMotion ? {} : { opacity: 0, scale: 1.03 }}
+                      transition={{ duration: 0.75, ease: "easeOut" }}
                     />
                   </AnimatePresence>
 
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/12 to-black/10"
-                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/12 to-black/10" />
 
                   <motion.div
                     className="absolute -left-1/3 top-0 h-full w-1/2 rotate-12 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0"
@@ -840,13 +888,9 @@ export default function RealEstateAIWebsite() {
                     transition={{ duration: 0.95, ease: "easeOut" }}
                   />
 
-                  <motion.div
-                    className="absolute right-5 top-5 rounded-full border border-white/30 bg-white/90 px-3 py-1 text-xs font-medium text-neutral-800 shadow-sm backdrop-blur-md"
-                    whileHover={{ y: -2 }}
-                    transition={{ duration: 0.3 }}
-                  >
+                  <div className="absolute right-5 top-5 rounded-full border border-white/30 bg-white/90 px-3 py-1 text-xs font-medium text-neutral-800 shadow-sm backdrop-blur-md">
                     {property.tag}
-                  </motion.div>
+                  </div>
 
                   <div className="absolute inset-x-0 bottom-0 p-5">
                     <div className="text-sm font-medium text-white">
@@ -857,7 +901,7 @@ export default function RealEstateAIWebsite() {
                     )}
                   </div>
 
-                  {safeImages.length > 1 && (
+                  {safeImages.length > 1 && !shouldReduceMotion && (
                     <div className="absolute inset-x-0 bottom-0 h-1 bg-white/10">
                       <motion.div
                         key={`${property.id}-${activeIndex}`}
@@ -1264,10 +1308,10 @@ export default function RealEstateAIWebsite() {
                           src={popupImages[activePopupImage % popupImages.length]}
                           alt={selectedProperty.title}
                           className="absolute inset-0 h-full w-full object-cover"
-                          initial={{ opacity: 0, scale: 1.06 }}
+                          initial={shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 1.03 }}
-                          transition={{ duration: 0.75, ease: "easeOut" }}
+                          exit={shouldReduceMotion ? {} : { opacity: 0, scale: 1.02 }}
+                          transition={{ duration: 0.7, ease: "easeOut" }}
                         />
                       </AnimatePresence>
 

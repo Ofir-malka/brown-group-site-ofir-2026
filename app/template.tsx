@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 
 export default function Template({
@@ -11,13 +11,14 @@ export default function Template({
   const pathname = usePathname();
 
   return (
-    <motion.main
+    <motion.div
       key={pathname}
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      exit={{ opacity: 0, y: 12 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
     >
       {children}
-    </motion.main>
+    </motion.div>
   );
 }
