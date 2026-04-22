@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -95,7 +96,12 @@ const featuredProperties: FeaturedProperty[] = [
 
 const featuredHighlights: Record<string, string[]> = {
   "dorianov-tlv": ["בניין בוטיק", "מרפסת שמש", "חניה פרטית", "מחסן"],
-  "malan-penthouse": ["בריכה פרטית", "85 מ״ר מרפסות", "פרטיות מלאה", "נכס בולט"],
+  "malan-penthouse": [
+    "בריכה פרטית",
+    "85 מ״ר מרפסות",
+    "פרטיות מלאה",
+    "נכס בולט",
+  ],
   "gindi-tlv-rent": ["נוף פתוח", "מרפסת גדולה", "מטבח יוקרתי", "חניה פרטית"],
 };
 
@@ -123,6 +129,7 @@ export default function RealEstateAIWebsite() {
   });
 
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -215,8 +222,6 @@ export default function RealEstateAIWebsite() {
   useEffect(() => {
     if (!popupImages.length || shouldReduceMotion) return;
 
-    setActivePopupImage(0);
-
     const interval = setInterval(() => {
       setActivePopupImage((prev) => (prev + 1) % popupImages.length);
     }, 3200);
@@ -225,15 +230,21 @@ export default function RealEstateAIWebsite() {
   }, [popupImages, shouldReduceMotion]);
 
   useEffect(() => {
-    if (!selectedProperty) return;
+  const isMobile = window.innerWidth < 768;
 
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+  if ((!selectedProperty && !isMobileMenuOpen) || !isMobile) return;
 
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, [selectedProperty]);
+  const originalBodyOverflow = document.body.style.overflow;
+  const originalHtmlOverflow = document.documentElement.style.overflow;
+
+  document.body.style.overflow = "hidden";
+  document.documentElement.style.overflow = "hidden";
+
+  return () => {
+    document.body.style.overflow = originalBodyOverflow || "";
+    document.documentElement.style.overflow = originalHtmlOverflow || "";
+  };
+}, [selectedProperty, isMobileMenuOpen]);
 
   const nextPopupImage = () => {
     if (!popupImages.length) return;
@@ -322,25 +333,33 @@ export default function RealEstateAIWebsite() {
       setChatMessages((prev) => [...prev, assistantMessage]);
     }
   };
-
+  const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
   return (
-    <div dir="rtl" className="min-h-screen bg-white text-black">
+    <div dir="rtl" className="min-h-screen overflow-x-hidden bg-white text-black">
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <Link
+  href="/"
+  className="flex min-w-0 max-w-[calc(100%-64px)] items-center gap-3 sm:max-w-none sm:gap-4"
+>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-neutral-200 bg-white shadow-sm sm:h-16 sm:w-16">
               <img
                 src="/logo.jpg"
                 alt="Brown Group"
-                className="h-11 w-auto object-contain"
+                className="h-8 w-auto object-contain sm:h-11"
               />
             </div>
 
-            <div className="leading-tight">
-              <div className="text-[1.05rem] font-semibold tracking-[0.08em] text-black">
+            <div className="min-w-0 leading-tight">
+              <div className="truncate text-[0.92rem] font-semibold tracking-[0.06em] text-black sm:text-[1.05rem] sm:tracking-[0.08em]">
                 BROWN GROUP
               </div>
-              <div className="mt-1 text-xs uppercase tracking-[0.28em] text-neutral-500">
+              <div className="mt-1 truncate text-[10px] uppercase tracking-[0.22em] text-neutral-500 sm:text-xs sm:tracking-[0.28em]">
                 Real Estate
               </div>
             </div>
@@ -397,10 +416,72 @@ export default function RealEstateAIWebsite() {
               <span>←</span>
             </a>
           </div>
+
+          <button
+  type="button"
+  onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-neutral-200 bg-white text-black shadow-sm transition hover:border-[#d9873b] hover:bg-[#fff8f1] md:hidden"
+  aria-label="פתח תפריט"
+  aria-expanded={isMobileMenuOpen}
+>
+  <span className="text-xl leading-none">
+    {isMobileMenuOpen ? "×" : "☰"}
+  </span>
+</button>
         </div>
+
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.22 }}
+              className="border-t border-black/5 bg-white/95 px-4 py-4 backdrop-blur-xl md:hidden"
+            >
+              <div className="mx-auto grid max-w-7xl gap-3">
+                <a
+                  href="#about"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-800 shadow-sm"
+                >
+                  אודות
+                </a>
+                <a
+                  href="#ai"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-800 shadow-sm"
+                >
+                  פתרונות AI
+                </a>
+                <Link
+                  href="/properties/sale"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-800 shadow-sm"
+                >
+                  נכסים למכירה
+                </Link>
+                <Link
+                  href="/properties/rent"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-800 shadow-sm"
+                >
+                  נכסים להשכרה
+                </Link>
+                <a
+                  href="#contact"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-2xl bg-black px-4 py-3 text-center text-sm font-medium text-white shadow-sm"
+                >
+                  פגישת ייעוץ
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      <section className="relative min-h-[92vh] overflow-hidden bg-black">
+      <section className="relative min-h-[100svh] overflow-hidden bg-black md:min-h-[92vh]">
         <div className="absolute inset-0 bg-[#f8f8f8]">
           <AnimatePresence mode="wait">
             <motion.img
@@ -423,28 +504,36 @@ export default function RealEstateAIWebsite() {
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <motion.div
             className="absolute right-[8%] top-[18%] h-[340px] w-[340px] rounded-full bg-[#d9873b]/20 blur-3xl"
-            animate={shouldReduceMotion ? undefined : { y: [0, -20, 0], x: [0, 12, 0] }}
+            animate={
+              shouldReduceMotion
+                ? undefined
+                : { y: [0, -20, 0], x: [0, 12, 0] }
+            }
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
             className="absolute left-[8%] bottom-[12%] h-[280px] w-[280px] rounded-full bg-white/10 blur-3xl"
-            animate={shouldReduceMotion ? undefined : { y: [0, 18, 0], x: [0, -10, 0] }}
+            animate={
+              shouldReduceMotion
+                ? undefined
+                : { y: [0, 18, 0], x: [0, -10, 0] }
+            }
             transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
 
-        <div className="relative z-10 mx-auto grid min-h-[92vh] max-w-7xl gap-12 px-6 py-16 md:grid-cols-2 md:items-center md:py-24">
+        <div className="relative z-10 mx-auto grid min-h-[100svh] max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-14 md:min-h-[92vh] md:grid-cols-2 md:items-center md:gap-12 md:py-24">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex flex-col justify-center"
           >
-            <div className="mb-5 inline-flex w-fit rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm text-white/90 shadow-sm backdrop-blur">
-              Brown Group • תל אביב • נדל"ן יוקרתי
+            <div className="mb-4 inline-flex w-fit max-w-full rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] text-white/90 shadow-sm backdrop-blur sm:mb-5 sm:px-4 sm:text-sm">
+              Brown Group • תל אביב • נדל״ן יוקרתי
             </div>
 
-            <h1 className="max-w-3xl text-5xl font-bold leading-[1.02] tracking-tight text-white md:text-7xl">
+            <h1 className="max-w-3xl text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-4xl md:text-7xl">
               הנדל״ן היוקרתי
               <br />
               פוגש חוויית
@@ -452,16 +541,16 @@ export default function RealEstateAIWebsite() {
               דיגיטל חדשה.
             </h1>
 
-            <p className="mt-7 max-w-2xl text-lg leading-8 text-white/80 md:text-xl">
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:mt-7 sm:text-lg md:text-xl">
               Brown Group מציגה דירות יוקרה, פנטהאוזים, נכסים להשכרה והזדמנויות
               השקעה נבחרות בתל אביב — עם שירות אישי, נראות ברמה גבוהה וגישה
               מדויקת לכל עסקה.
             </p>
 
-            <div className="mt-10 flex flex-wrap gap-4">
+            <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:gap-4">
               <a
                 href="#contact"
-                className="group inline-flex items-center gap-3 rounded-2xl bg-white px-7 py-3.5 text-sm font-medium text-black shadow-[0_14px_34px_rgba(255,255,255,0.16)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#f5e6d6]"
+                className="group inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-white px-6 py-3 text-sm font-medium text-black shadow-[0_14px_34px_rgba(255,255,255,0.16)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#f5e6d6] sm:w-auto sm:px-7 sm:py-3.5"
               >
                 <span>קבעו פגישת ייעוץ</span>
                 <span className="transition-transform duration-300 group-hover:-translate-x-1">
@@ -471,7 +560,7 @@ export default function RealEstateAIWebsite() {
 
               <a
                 href="#listings"
-                className="group inline-flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-7 py-3.5 text-sm font-medium text-white backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#d9873b] hover:bg-white/15"
+                className="group inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-medium text-white backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#d9873b] hover:bg-white/15 sm:w-auto sm:px-7 sm:py-3.5"
               >
                 <span>צפו בנכסים נבחרים</span>
                 <span className="transition-transform duration-300 group-hover:-translate-x-1">
@@ -480,20 +569,20 @@ export default function RealEstateAIWebsite() {
               </a>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-2 sm:mt-10 sm:gap-3">
               {heroImages.map((_, index) => (
                 <div
                   key={index}
-                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                  className={`h-2 rounded-full transition-all duration-300 sm:h-2.5 ${
                     index === activeHeroImage
-                      ? "w-9 bg-[#d9873b]"
-                      : "w-2.5 bg-white/45"
+                      ? "w-8 bg-[#d9873b] sm:w-9"
+                      : "w-2 bg-white/45 sm:w-2.5"
                   }`}
                 />
               ))}
             </div>
 
-            <div className="mt-12 grid max-w-xl grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="mt-10 grid max-w-xl grid-cols-1 gap-3 sm:mt-12 sm:gap-4 sm:grid-cols-3">
               {[
                 {
                   title: "קנייה ומכירה",
@@ -510,13 +599,13 @@ export default function RealEstateAIWebsite() {
               ].map((item) => (
                 <div
                   key={item.title}
-                  className="group rounded-[30px] border border-white/10 bg-white/10 p-6 text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#d9873b] hover:shadow-[0_20px_50px_rgba(15,23,42,0.28)]"
+                  className="group rounded-[26px] border border-white/10 bg-white/10 p-5 text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] hover:border-[#d9873b] hover:shadow-[0_20px_50px_rgba(15,23,42,0.28)] sm:rounded-[30px] sm:p-6"
                 >
-                  <div className="mb-4 h-1.5 w-10 rounded-full bg-[#d9873b] transition-all duration-300 group-hover:w-16" />
-                  <div className="text-3xl font-semibold tracking-tight">
+                  <div className="mb-3 h-1.5 w-8 rounded-full bg-[#d9873b] transition-all duration-300 group-hover:w-14 sm:mb-4 sm:w-10 sm:group-hover:w-16" />
+                  <div className="text-2xl font-semibold tracking-tight sm:text-3xl">
                     {item.title}
                   </div>
-                  <div className="mt-3 text-sm leading-7 text-white/70">
+                  <div className="mt-2 text-xs leading-6 text-white/70 sm:mt-3 sm:text-sm sm:leading-7">
                     {item.text}
                   </div>
                 </div>
@@ -528,83 +617,87 @@ export default function RealEstateAIWebsite() {
             initial={{ opacity: 0, y: 34 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.15, ease: "easeOut" }}
-            className="grid gap-5"
+            className="grid gap-4 sm:gap-5"
           >
-            <div className="rounded-[36px] border border-white/10 bg-white/10 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.22)] backdrop-blur-xl">
-              <div className="mb-5 flex items-center justify-between">
+            <div className="rounded-[28px] border border-white/10 bg-white/10 p-4 shadow-[0_30px_90px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:rounded-[36px] sm:p-6">
+              <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-black shadow-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-black shadow-sm sm:h-12 sm:w-12">
                     ✨
                   </div>
                   <div>
-                    <div className="text-xs uppercase tracking-[0.22em] text-[#f0b67d]">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-[#f0b67d] sm:text-xs sm:tracking-[0.22em]">
                       Brown Group AI
                     </div>
-                    <div className="text-xl font-semibold tracking-tight text-white">
+                    <div className="text-lg font-semibold tracking-tight text-white sm:text-xl">
                       יועץ נדל״ן חכם
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-full border border-[#f1d0aa]/40 bg-[#fff6ee]/90 px-3 py-1 text-xs font-medium text-[#b96b24]">
+                <div className="w-fit rounded-full border border-[#f1d0aa]/40 bg-[#fff6ee]/90 px-3 py-1 text-[10px] font-medium text-[#b96b24] sm:text-xs">
                   Online
                 </div>
               </div>
 
-              <div className="space-y-3 rounded-[28px] border border-white/10 bg-white/10 p-4">
+              <div className="space-y-2 rounded-[22px] border border-white/10 bg-white/10 p-3 sm:space-y-3 sm:rounded-[28px] sm:p-4">
                 <div className="flex justify-start">
-                  <div className="max-w-[80%] rounded-2xl rounded-tr-md bg-white px-4 py-3 text-sm leading-6 text-neutral-700 shadow-sm">
+                  <div className="max-w-[85%] rounded-2xl rounded-tr-md bg-white px-3 py-2 text-xs leading-5 text-neutral-700 shadow-sm sm:max-w-[80%] sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
                     אני מחפש דירת 4 חדרים בצפון תל אביב עד 4 מיליון.
                   </div>
                 </div>
 
                 <div className="flex justify-end">
-                  <div className="max-w-[80%] rounded-2xl rounded-tl-md bg-black px-4 py-3 text-sm leading-6 text-white shadow-sm">
+                  <div className="max-w-[85%] rounded-2xl rounded-tl-md bg-black px-3 py-2 text-xs leading-5 text-white shadow-sm sm:max-w-[80%] sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
                     מצאתי כמה אפשרויות רלוונטיות. חשוב לך מרפסת, חניה או קרבה
                     לרכבת?
                   </div>
                 </div>
 
                 <div className="flex justify-start">
-                  <div className="max-w-[80%] rounded-2xl rounded-tr-md bg-white px-4 py-3 text-sm leading-6 text-neutral-700 shadow-sm">
+                  <div className="max-w-[85%] rounded-2xl rounded-tr-md bg-white px-3 py-2 text-xs leading-5 text-neutral-700 shadow-sm sm:max-w-[80%] sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
                     חניה ומרפסת חשובות לי מאוד.
                   </div>
                 </div>
 
                 <div className="flex justify-end">
-                  <div className="max-w-[80%] rounded-2xl rounded-tl-md bg-black px-4 py-3 text-sm leading-6 text-white shadow-sm">
+                  <div className="max-w-[85%] rounded-2xl rounded-tl-md bg-black px-3 py-2 text-xs leading-5 text-white shadow-sm sm:max-w-[80%] sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
                     מעולה. אתמקד בנכסים עם מפרט גבוה בצפון תל אביב ואפשר גם לתאם
                     שיחה עם יועץ.
                   </div>
                 </div>
               </div>
 
-              <div className="mt-5 rounded-[24px] border border-white/10 bg-white/10 p-3 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 rounded-2xl bg-white/10 px-4 py-3 text-sm text-white/55">
+              <div className="mt-4 rounded-[20px] border border-white/10 bg-white/10 p-2 shadow-sm sm:mt-5 sm:rounded-[24px] sm:p-3">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="flex-1 rounded-2xl bg-white/10 px-3 py-2 text-[11px] text-white/55 sm:px-4 sm:py-3 sm:text-sm">
                     כתבו בקשה כמו: דירת יוקרה / משרד / נכס להשקעה
                   </div>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-black shadow-sm">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-black shadow-sm sm:h-11 sm:w-11">
                     →
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="rounded-[32px] border border-white/10 bg-white/10 p-6 text-white shadow-sm backdrop-blur">
-                <div className="text-sm text-white/65">Lead Score</div>
-                <div className="mt-2 text-3xl font-semibold">92%</div>
-                <p className="mt-3 text-sm leading-6 text-white/75">
+            <div className="grid gap-4 sm:gap-5 md:grid-cols-2">
+              <div className="rounded-[26px] border border-white/10 bg-white/10 p-5 text-white shadow-sm backdrop-blur sm:rounded-[32px] sm:p-6">
+                <div className="text-xs text-white/65 sm:text-sm">Lead Score</div>
+                <div className="mt-1 text-2xl font-semibold sm:mt-2 sm:text-3xl">
+                  92%
+                </div>
+                <p className="mt-2 text-xs leading-5 text-white/75 sm:mt-3 sm:text-sm sm:leading-6">
                   לקוח בעל כוונת רכישה גבוהה לפי היסטוריית חיפוש, פניות קודמות
                   ותקציב מוגדר.
                 </p>
               </div>
 
-              <div className="rounded-[32px] border border-white/10 bg-white/10 p-6 text-white shadow-sm backdrop-blur">
-                <div className="text-sm text-white/65">Smart Value</div>
-                <div className="mt-2 text-3xl font-semibold">₪3.76M</div>
-                <p className="mt-3 text-sm leading-6 text-white/75">
+              <div className="rounded-[26px] border border-white/10 bg-white/10 p-5 text-white shadow-sm backdrop-blur sm:rounded-[32px] sm:p-6">
+                <div className="text-xs text-white/65 sm:text-sm">Smart Value</div>
+                <div className="mt-1 text-2xl font-semibold sm:mt-2 sm:text-3xl">
+                  ₪3.76M
+                </div>
+                <p className="mt-2 text-xs leading-5 text-white/75 sm:mt-3 sm:text-sm sm:leading-6">
                   הערכת שווי חכמה המבוססת על עסקאות דומות, מיקום, נתוני שוק
                   ומאפייני הנכס.
                 </p>
@@ -616,34 +709,34 @@ export default function RealEstateAIWebsite() {
 
       <motion.section
         id="about"
-        className="mx-auto max-w-7xl px-6 py-24"
+        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24"
         {...revealUp}
       >
-        <div className="grid gap-14 md:grid-cols-2 md:items-start">
+        <div className="grid gap-10 md:grid-cols-2 md:items-start md:gap-14">
           <div>
             <div className="text-sm font-medium uppercase tracking-[0.24em] text-[#d9873b]">
               About Brown Group
             </div>
 
-            <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">
               משרד תיווך שמביא
               <br />
               סטנדרט אחר של שירות.
             </h2>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-neutral-700">
+            <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-700 sm:mt-6 sm:text-lg sm:leading-8">
               Brown Group מתמחה בדירות, נכסי יוקרה, משרדים והשקעות בתל אביב, עם
               ליווי אישי, הבנה עמוקה של השוק המקומי ושירות מדויק שמחבר בין
               אנשים, נכסים והזדמנויות אמיתיות.
             </p>
 
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-neutral-700">
+            <p className="mt-4 max-w-2xl text-base leading-7 text-neutral-700 sm:text-lg sm:leading-8">
               השילוב בין ניסיון תיווך, חשיבה אסטרטגית ושימוש בכלים חכמים מאפשר
               לנו לנהל תהליך איכותי יותר — משלב האיתור ועד סגירת העסקה.
             </p>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
             {[
               {
                 title: "היכרות עמוקה עם תל אביב",
@@ -668,10 +761,10 @@ export default function RealEstateAIWebsite() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.25 }}
                 transition={{ duration: 0.45, delay: index * 0.06 }}
-                className="group rounded-[28px] border border-neutral-200 bg-white p-7 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:border-[#d9873b] hover:shadow-[0_20px_45px_rgba(15,23,42,0.10)]"
+                className="group rounded-[26px] border border-neutral-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:border-[#d9873b] hover:shadow-[0_20px_45px_rgba(15,23,42,0.10)] sm:rounded-[28px] sm:p-7"
               >
-                <div className="mb-4 h-1.5 w-10 rounded-full bg-[#d9873b] opacity-70 transition-all duration-300 group-hover:w-16" />
-                <h3 className="text-xl font-semibold tracking-tight">
+                <div className="mb-3 h-1.5 w-10 rounded-full bg-[#d9873b] opacity-70 transition-all duration-300 group-hover:w-16 sm:mb-4" />
+                <h3 className="text-lg font-semibold tracking-tight sm:text-xl">
                   {item.title}
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-neutral-600">
@@ -695,34 +788,34 @@ export default function RealEstateAIWebsite() {
 
       <motion.section
         id="ai"
-        className="relative overflow-hidden bg-[#fffaf5] py-24"
+        className="relative overflow-hidden bg-[#fffaf5] py-16 sm:py-24"
         {...revealUp}
       >
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="pointer-events-none absolute inset-0">
           <div className="absolute right-[8%] top-[10%] h-40 w-40 rounded-full bg-[#d9873b]/10 blur-3xl" />
           <div className="absolute left-[10%] bottom-[10%] h-44 w-44 rounded-full bg-[#f1d0aa]/20 blur-3xl" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-6">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
           <div className="max-w-3xl">
             <div className="text-sm font-medium uppercase tracking-[0.24em] text-[#d9873b]">
               AI Solutions
             </div>
 
-            <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">
               טכנולוגיה חכמה
               <br />
               שמעצימה את שירות התיווך.
             </h2>
 
-            <p className="mt-6 text-lg leading-8 text-neutral-700">
+            <p className="mt-5 text-base leading-7 text-neutral-700 sm:mt-6 sm:text-lg sm:leading-8">
               ב־Brown Group אנחנו רואים ב־AI כלי שמחדד את העבודה, משפר את חוויית
               הלקוח ומאפשר תהליך מהיר, מדויק ואפקטיבי יותר — משלב ההתעניינות ועד
               התאמת הנכס הנכון.
             </p>
           </div>
 
-          <div className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-10 grid gap-4 sm:mt-14 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
             {aiBlocks.map((item, index) => (
               <motion.div
                 key={item.name}
@@ -730,43 +823,43 @@ export default function RealEstateAIWebsite() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.5, delay: index * 0.07 }}
-                className="group rounded-[30px] border border-[#f3e3d2] bg-white p-7 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-[#d9873b] hover:shadow-[0_20px_45px_rgba(15,23,42,0.10)]"
+                className="group rounded-[26px] border border-[#f3e3d2] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-[#d9873b] hover:shadow-[0_20px_45px_rgba(15,23,42,0.10)] sm:rounded-[30px] sm:p-7"
               >
-                <div className="mb-5 flex items-center justify-between">
+                <div className="mb-4 flex items-center justify-between sm:mb-5">
                   <div className="rounded-full border border-[#f1d0aa] bg-[#fff6ee] px-3 py-1 text-xs font-medium text-[#b96b24]">
                     {item.name}
                   </div>
                   <div className="h-2.5 w-2.5 rounded-full bg-[#d9873b] opacity-70 transition-all duration-300 group-hover:scale-125" />
                 </div>
 
-                <p className="text-base leading-8 text-neutral-700">
+                <p className="text-sm leading-7 text-neutral-700 sm:text-base sm:leading-8">
                   {item.text}
                 </p>
 
-                <div className="mt-6 h-1.5 w-10 rounded-full bg-[#d9873b] opacity-60 transition-all duration-300 group-hover:w-16" />
+                <div className="mt-5 h-1.5 w-10 rounded-full bg-[#d9873b] opacity-60 transition-all duration-300 group-hover:w-16 sm:mt-6" />
               </motion.div>
             ))}
           </div>
         </div>
       </motion.section>
 
-      <section className="mx-auto max-w-7xl px-6 py-24">
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
           <div className="text-sm font-medium uppercase tracking-[0.25em] text-[#d9873b]">
             Why Brown Group
           </div>
 
-          <h2 className="mt-5 text-4xl font-semibold tracking-tight md:text-5xl">
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">
             למה לבחור ב־Brown Group
           </h2>
 
-          <p className="mt-6 text-lg leading-8 text-neutral-600">
+          <p className="mt-5 text-base leading-7 text-neutral-600 sm:mt-6 sm:text-lg sm:leading-8">
             שילוב של ניסיון, הבנה עמוקה של השוק המקומי ושירות אישי ברמה גבוהה,
             כדי להוביל כל עסקה בצורה מדויקת ונכונה.
           </p>
         </div>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
+        <div className="mt-10 grid gap-4 sm:mt-16 sm:gap-8 md:grid-cols-3">
           {[
             {
               icon: "🏙️",
@@ -786,10 +879,10 @@ export default function RealEstateAIWebsite() {
           ].map((item) => (
             <div
               key={item.title}
-              className="group rounded-[32px] border border-neutral-200 bg-white p-8 text-right shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+              className="group rounded-[28px] border border-neutral-200 bg-white p-5 text-right shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl sm:rounded-[32px] sm:p-8"
             >
               <div className="mb-4 text-3xl">{item.icon}</div>
-              <h3 className="text-xl font-semibold">{item.title}</h3>
+              <h3 className="text-lg font-semibold sm:text-xl">{item.title}</h3>
               <p className="mt-3 text-sm leading-7 text-neutral-600">
                 {item.text}
               </p>
@@ -798,20 +891,20 @@ export default function RealEstateAIWebsite() {
         </div>
       </section>
 
-      <section id="listings" className="mx-auto max-w-7xl px-6 py-24">
+      <section id="listings" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
             <div className="text-sm font-medium uppercase tracking-[0.24em] text-[#d9873b]">
               Featured Properties
             </div>
 
-            <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">
               נכסים נבחרים
               <br />
               בסטנדרט של Brown Group
             </h2>
 
-            <p className="mt-6 text-lg leading-8 text-neutral-700">
+            <p className="mt-5 text-base leading-7 text-neutral-700 sm:mt-6 sm:text-lg sm:leading-8">
               מבחר נכסים נבחרים באמת — נכס מכירה מוביל לצד שתי השכרות יוקרתיות
               שמציגות את הסטנדרט, העיצוב והאיכות של Brown Group.
             </p>
@@ -826,7 +919,7 @@ export default function RealEstateAIWebsite() {
           </a>
         </div>
 
-        <div className="mt-14 grid gap-7 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-7 md:grid-cols-3">
           {featuredProperties.map((property, index) => {
             const safeImages = propertyImagesMap[property.id] || [];
             const activeIndex = activeImages[property.id] || 0;
@@ -865,14 +958,16 @@ export default function RealEstateAIWebsite() {
               >
                 <div className="pointer-events-none absolute inset-0 rounded-[32px] ring-1 ring-transparent transition duration-500 group-hover:ring-[#d9873b]/20" />
 
-                <div className="relative h-72 overflow-hidden bg-neutral-100">
+                <div className="relative h-64 overflow-hidden bg-neutral-100 sm:h-72">
                   <AnimatePresence mode="wait">
                     <motion.img
                       key={currentImage}
                       src={currentImage || safeImages[0]}
                       alt={property.title}
                       className="absolute inset-0 h-full w-full object-cover"
-                      initial={shouldReduceMotion ? false : { opacity: 0, scale: 1.05 }}
+                      initial={
+                        shouldReduceMotion ? false : { opacity: 0, scale: 1.05 }
+                      }
                       animate={{ opacity: 1, scale: 1 }}
                       exit={shouldReduceMotion ? {} : { opacity: 0, scale: 1.03 }}
                       transition={{ duration: 0.75, ease: "easeOut" }}
@@ -914,7 +1009,7 @@ export default function RealEstateAIWebsite() {
                   )}
                 </div>
 
-                <div className="p-6">
+                <div className="p-5 sm:p-6">
                   <div className="mb-3 flex items-center justify-between">
                     <div className="inline-flex rounded-full border border-[#f1d0aa] bg-[#fff6ee] px-3 py-1 text-xs font-medium text-[#b96b24]">
                       {property.type === "sale" ? "נכס למכירה" : "נכס להשכרה"}
@@ -951,7 +1046,7 @@ export default function RealEstateAIWebsite() {
                   )}
 
                   <div className="mt-6 flex items-center justify-between border-t border-neutral-100 pt-5">
-                    <span className="text-2xl font-semibold tracking-tight transition duration-300 group-hover:text-black">
+                    <span className="text-xl font-semibold tracking-tight transition duration-300 group-hover:text-black sm:text-2xl">
                       {property.price}
                     </span>
 
@@ -969,25 +1064,25 @@ export default function RealEstateAIWebsite() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-24">
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
         <div className="max-w-3xl">
           <div className="text-sm font-medium uppercase tracking-[0.24em] text-[#d9873b]">
             Property Categories
           </div>
 
-          <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+          <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">
             סוגי הנכסים
             <br />
             שאנחנו מתמחים בהם
           </h2>
 
-          <p className="mt-6 text-lg leading-8 text-neutral-700">
+          <p className="mt-5 text-base leading-7 text-neutral-700 sm:mt-6 sm:text-lg sm:leading-8">
             Brown Group פועלת במגוון תחומים בשוק הנדל״ן בתל אביב, עם התאמה
             מדויקת יותר לכל צורך — ממגורים ועד מסחר והשקעה.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-7 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-7 md:grid-cols-2 xl:grid-cols-4">
           {[
             {
               icon: "🏡",
@@ -1012,10 +1107,10 @@ export default function RealEstateAIWebsite() {
           ].map((item) => (
             <div
               key={item.title}
-              className="group rounded-[32px] border border-neutral-200 bg-white p-7 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-[#d9873b] hover:shadow-[0_24px_55px_rgba(15,23,42,0.12)]"
+              className="group rounded-[28px] border border-neutral-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-[#d9873b] hover:shadow-[0_24px_55px_rgba(15,23,42,0.12)] sm:rounded-[32px] sm:p-7"
             >
-              <div className="mb-5 text-3xl">{item.icon}</div>
-              <h3 className="text-2xl font-semibold tracking-tight">
+              <div className="mb-4 text-3xl sm:mb-5">{item.icon}</div>
+              <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">
                 {item.title}
               </h3>
               <p className="mt-4 text-sm leading-7 text-neutral-600">
@@ -1026,25 +1121,25 @@ export default function RealEstateAIWebsite() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-24">
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
         <div className="max-w-3xl">
           <div className="text-sm font-medium uppercase tracking-[0.24em] text-[#d9873b]">
             Areas of Expertise
           </div>
 
-          <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+          <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">
             אזורי הפעילות שלנו
             <br />
             בתל אביב
           </h2>
 
-          <p className="mt-6 text-lg leading-8 text-neutral-700">
+          <p className="mt-5 text-base leading-7 text-neutral-700 sm:mt-6 sm:text-lg sm:leading-8">
             Brown Group פועלת באזורים המבוקשים והאיכותיים ביותר בתל אביב, עם
             היכרות עמוקה של השוק המקומי והתאמה מדויקת יותר לכל לקוח ולכל נכס.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-7 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-7 md:grid-cols-2 xl:grid-cols-4">
           {[
             {
               area: "צפון תל אביב",
@@ -1069,12 +1164,12 @@ export default function RealEstateAIWebsite() {
           ].map((item) => (
             <div
               key={item.area}
-              className="group rounded-[32px] border border-neutral-200 bg-white p-7 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-[#d9873b] hover:shadow-[0_24px_55px_rgba(15,23,42,0.12)]"
+              className="group rounded-[28px] border border-neutral-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:border-[#d9873b] hover:shadow-[0_24px_55px_rgba(15,23,42,0.12)] sm:rounded-[32px] sm:p-7"
             >
-              <div className="mb-5 inline-flex rounded-full border border-[#f1d0aa] bg-[#fff6ee] px-3 py-1 text-xs font-medium text-[#b96b24]">
+              <div className="mb-4 inline-flex rounded-full border border-[#f1d0aa] bg-[#fff6ee] px-3 py-1 text-xs font-medium text-[#b96b24] sm:mb-5">
                 {item.area}
               </div>
-              <h3 className="text-2xl font-semibold tracking-tight">
+              <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">
                 {item.title}
               </h3>
               <p className="mt-4 text-sm leading-7 text-neutral-600">
@@ -1085,48 +1180,48 @@ export default function RealEstateAIWebsite() {
         </div>
       </section>
 
-      <section id="contact" className="bg-black py-24 text-white">
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 md:grid-cols-2 md:items-start">
+      <section id="contact" className="bg-black py-16 text-white sm:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 md:grid-cols-2 md:items-start md:gap-12">
           <div className="max-w-2xl">
             <div className="text-sm font-medium uppercase tracking-[0.24em] text-[#d9873b]">
               Contact
             </div>
 
-            <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">
               בואו נדבר על
               <br />
               הנכס הבא שלכם.
             </h2>
 
-            <p className="mt-6 text-lg leading-8 text-slate-300">
+            <p className="mt-5 text-base leading-7 text-slate-300 sm:mt-6 sm:text-lg sm:leading-8">
               בין אם אתם מחפשים דירה, נכס יוקרה, משרד או הזדמנות השקעה בתל
               אביב — Brown Group כאן כדי ללוות אתכם בגישה אישית, מדויקת
               ודיסקרטית יותר.
             </p>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2">
               <div className="rounded-[24px] border border-white/10 bg-white/5 p-5 backdrop-blur">
                 <div className="text-sm text-[#d9873b]">שירות אישי</div>
-                <div className="mt-2 text-lg font-medium">
+                <div className="mt-2 text-base font-medium sm:text-lg">
                   ליווי צמוד לאורך כל הדרך
                 </div>
               </div>
 
               <div className="rounded-[24px] border border-white/10 bg-white/5 p-5 backdrop-blur">
                 <div className="text-sm text-[#d9873b]">זמינות גבוהה</div>
-                <div className="mt-2 text-lg font-medium">
+                <div className="mt-2 text-base font-medium sm:text-lg">
                   מענה מהיר וברור לכל פנייה
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.24)] backdrop-blur">
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.24)] backdrop-blur sm:rounded-[32px] sm:p-6">
             <div className="mb-6">
               <div className="text-sm uppercase tracking-[0.2em] text-[#d9873b]">
                 צור קשר
               </div>
-              <div className="mt-2 text-2xl font-semibold tracking-tight">
+              <div className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
                 השאירו פרטים ונחזור אליכם
               </div>
             </div>
@@ -1176,7 +1271,7 @@ export default function RealEstateAIWebsite() {
       </section>
 
       <footer className="border-t border-neutral-200 bg-[#faf8f5]">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-4">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 sm:py-14 md:grid-cols-4 md:gap-10">
           <div>
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-neutral-200 bg-white shadow-sm">
@@ -1265,7 +1360,7 @@ export default function RealEstateAIWebsite() {
         </div>
 
         <div className="border-t border-neutral-200">
-          <div className="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-5 text-xs text-neutral-500 md:flex-row md:items-center md:justify-between">
+          <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-5 text-xs text-neutral-500 sm:px-6 md:flex-row md:items-center md:justify-between">
             <span>© 2026 Brown Group. כל הזכויות שמורות.</span>
             <span>עיצוב נקי, יוקרתי ומותאם לנדל״ן בתל אביב.</span>
           </div>
@@ -1275,7 +1370,7 @@ export default function RealEstateAIWebsite() {
       <AnimatePresence>
         {selectedProperty && (
           <motion.div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/55 px-3 py-4 backdrop-blur-sm md:items-center sm:px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1283,7 +1378,7 @@ export default function RealEstateAIWebsite() {
             onClick={() => setSelectedProperty(null)}
           >
             <motion.div
-              className="relative w-full max-w-4xl overflow-hidden rounded-[36px] border border-white/20 bg-white shadow-[0_30px_100px_rgba(0,0,0,0.25)]"
+              className="relative my-4 w-full max-w-4xl overflow-hidden rounded-[28px] border border-white/20 bg-white shadow-[0_30px_100px_rgba(0,0,0,0.25)] sm:my-0 sm:max-h-[92vh] sm:rounded-[36px]"
               initial={{ opacity: 0, y: 40, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 30, scale: 0.96 }}
@@ -1293,13 +1388,13 @@ export default function RealEstateAIWebsite() {
               <button
                 type="button"
                 onClick={() => setSelectedProperty(null)}
-                className="absolute left-5 top-5 z-20 rounded-full bg-black px-4 py-2 text-sm text-white transition hover:bg-[#1a1a1a]"
+                className="absolute left-3 top-3 z-20 rounded-full bg-black px-3 py-2 text-xs text-white transition hover:bg-[#1a1a1a] sm:left-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm"
               >
                 סגור
               </button>
 
-              <div className="grid md:grid-cols-2">
-                <div className="relative min-h-[360px] overflow-hidden bg-gradient-to-br from-neutral-100 via-[#f5ede6] to-[#ffe8cc]">
+              <div className="grid max-h-[85vh] overflow-y-auto md:max-h-[92vh] md:grid-cols-2">
+                <div className="relative min-h-[280px] overflow-hidden bg-gradient-to-br from-neutral-100 via-[#f5ede6] to-[#ffe8cc] sm:min-h-[360px]">
                   {popupImages.length > 0 && (
                     <>
                       <AnimatePresence mode="wait">
@@ -1308,7 +1403,9 @@ export default function RealEstateAIWebsite() {
                           src={popupImages[activePopupImage % popupImages.length]}
                           alt={selectedProperty.title}
                           className="absolute inset-0 h-full w-full object-cover"
-                          initial={shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }}
+                          initial={
+                            shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }
+                          }
                           animate={{ opacity: 1, scale: 1 }}
                           exit={shouldReduceMotion ? {} : { opacity: 0, scale: 1.02 }}
                           transition={{ duration: 0.7, ease: "easeOut" }}
@@ -1322,7 +1419,7 @@ export default function RealEstateAIWebsite() {
                           <button
                             type="button"
                             onClick={prevPopupImage}
-                            className="absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-lg text-black shadow-md backdrop-blur transition hover:bg-white"
+                            className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-lg text-black shadow-md backdrop-blur transition hover:bg-white sm:right-4 sm:h-11 sm:w-11"
                           >
                             ›
                           </button>
@@ -1330,7 +1427,7 @@ export default function RealEstateAIWebsite() {
                           <button
                             type="button"
                             onClick={nextPopupImage}
-                            className="absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-lg text-black shadow-md backdrop-blur transition hover:bg-white"
+                            className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-lg text-black shadow-md backdrop-blur transition hover:bg-white sm:left-4 sm:h-11 sm:w-11"
                           >
                             ‹
                           </button>
@@ -1340,12 +1437,12 @@ export default function RealEstateAIWebsite() {
                   )}
                 </div>
 
-                <div className="p-8">
+                <div className="p-5 sm:p-8">
                   <div className="inline-flex rounded-full border border-[#f1d0aa] bg-[#fff6ee] px-3 py-1 text-xs font-medium text-[#b96b24]">
                     {selectedProperty.tag}
                   </div>
 
-                  <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-tight">
+                  <h2 className="mt-4 text-2xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-3xl">
                     {selectedProperty.title}
                   </h2>
 
@@ -1353,7 +1450,7 @@ export default function RealEstateAIWebsite() {
                     {selectedProperty.area}
                   </div>
 
-                  <div className="mt-6 rounded-2xl bg-[#faf7f3] p-4 text-sm leading-7 text-neutral-700">
+                  <div className="mt-5 rounded-2xl bg-[#faf7f3] p-4 text-sm leading-7 text-neutral-700 sm:mt-6">
                     {selectedProperty.details}
                   </div>
 
@@ -1370,29 +1467,29 @@ export default function RealEstateAIWebsite() {
                     </div>
                   )}
 
-                  <p className="mt-6 text-base leading-8 text-neutral-700">
+                  <p className="mt-5 text-sm leading-7 text-neutral-700 sm:mt-6 sm:text-base sm:leading-8">
                     {selectedProperty.description}
                   </p>
 
-                  <div className="mt-8 text-3xl font-semibold tracking-tight">
+                  <div className="mt-6 text-2xl font-semibold tracking-tight sm:mt-8 sm:text-3xl">
                     {selectedProperty.price}
                   </div>
 
-                  <div className="mt-8 flex flex-wrap gap-3">
+                  <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
                     <a
                       href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
                         `היי Brown Group, אני מעוניין בנכס: ${selectedProperty.title}`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-[#1a1a1a]"
+                      className="rounded-2xl bg-black px-5 py-3 text-center text-sm font-medium text-white transition hover:bg-[#1a1a1a]"
                     >
                       שליחה בוואטסאפ
                     </a>
 
                     <Link
                       href={selectedProperty.href}
-                      className="rounded-2xl border border-neutral-300 px-5 py-3 text-sm font-medium text-neutral-800 transition hover:border-[#d9873b] hover:bg-[#fff8f1]"
+                      className="rounded-2xl border border-neutral-300 px-5 py-3 text-center text-sm font-medium text-neutral-800 transition hover:border-[#d9873b] hover:bg-[#fff8f1]"
                     >
                       מעבר לעמוד הנכס
                     </Link>
@@ -1403,12 +1500,19 @@ export default function RealEstateAIWebsite() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <div className="fixed bottom-5 left-5 z-[999] flex flex-col gap-3">
+<button
+  type="button"
+  onClick={scrollToTop}
+  className="fixed bottom-24 right-4 z-[998] inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-black shadow-[0_16px_40px_rgba(0,0,0,0.18)] backdrop-blur transition hover:scale-[1.03] sm:hidden"
+  aria-label="חזרה למעלה"
+>
+  ↑
+</button>
+      <div className="fixed bottom-4 left-4 z-[999] flex max-w-[calc(100vw-2rem)] flex-col gap-2 sm:bottom-5 sm:left-5 sm:gap-3">
         <button
           type="button"
           onClick={() => setIsChatOpen((prev) => !prev)}
-          className="rounded-full bg-black px-6 py-4 text-sm font-medium text-white shadow-[0_18px_40px_rgba(0,0,0,0.25)] transition hover:scale-[1.02]"
+          className="rounded-full bg-black px-4 py-3 text-xs font-medium text-white shadow-[0_18px_40px_rgba(0,0,0,0.25)] transition hover:scale-[1.02] sm:px-6 sm:py-4 sm:text-sm"
         >
           ✨ דברו עם יועץ AI
         </button>
@@ -1417,7 +1521,7 @@ export default function RealEstateAIWebsite() {
           href={`https://wa.me/${whatsappNumber}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-full bg-black px-6 py-4 text-sm font-medium text-white shadow-[0_18px_40px_rgba(0,0,0,0.25)] transition hover:scale-[1.02]"
+          className="rounded-full bg-black px-4 py-3 text-center text-xs font-medium text-white shadow-[0_18px_40px_rgba(0,0,0,0.25)] transition hover:scale-[1.02] sm:px-6 sm:py-4 sm:text-sm"
         >
           דברו איתנו בוואטסאפ
         </a>
@@ -1430,9 +1534,9 @@ export default function RealEstateAIWebsite() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.96 }}
             transition={{ duration: 0.25 }}
-            className="fixed bottom-28 left-5 z-[1000] w-[360px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[30px] border border-neutral-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]"
+            className="fixed bottom-24 left-3 z-[1000] w-[calc(100vw-1.5rem)] max-w-[360px] overflow-hidden rounded-[24px] border border-neutral-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)] sm:bottom-28 sm:left-5 sm:w-[360px] sm:max-w-[calc(100vw-2rem)] sm:rounded-[30px]"
           >
-            <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-4 sm:px-5">
               <div>
                 <div className="text-sm font-semibold text-black">
                   Brown Group AI
@@ -1451,7 +1555,7 @@ export default function RealEstateAIWebsite() {
               </button>
             </div>
 
-            <div className="max-h-[360px] space-y-3 overflow-y-auto bg-[#faf8f5] p-4">
+            <div className="max-h-[50vh] space-y-3 overflow-y-auto bg-[#faf8f5] p-4 sm:max-h-[360px]">
               {chatMessages.map((message, index) => (
                 <div
                   key={`${message.role}-${index}`}

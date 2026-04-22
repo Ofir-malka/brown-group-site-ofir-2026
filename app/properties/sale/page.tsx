@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
@@ -92,6 +93,7 @@ export default function SalePropertiesPage() {
   const [selectedProperty, setSelectedProperty] = useState<SaleProperty | null>(
     null
   );
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeImages, setActiveImages] = useState<Record<string, number>>({});
   const [pausedSliders, setPausedSliders] = useState<Record<string, boolean>>(
     {}
@@ -137,14 +139,23 @@ export default function SalePropertiesPage() {
   useEffect(() => {
     if (!popupImages.length) return;
 
-    setActivePopupImage(0);
-
     const interval = setInterval(() => {
       setActivePopupImage((prev) => (prev + 1) % popupImages.length);
     }, 3200);
 
     return () => clearInterval(interval);
   }, [popupImages]);
+
+  useEffect(() => {
+    if (!selectedProperty && !isMobileMenuOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [selectedProperty, isMobileMenuOpen]);
 
   const nextPopupImage = () => {
     if (!popupImages.length) return;
@@ -159,23 +170,23 @@ export default function SalePropertiesPage() {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-white text-black">
+    <div dir="rtl" className="min-h-screen overflow-x-hidden bg-white text-black">
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <Link href="/" className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-neutral-200 bg-white shadow-sm sm:h-16 sm:w-16">
               <img
                 src="/logo.jpg"
                 alt="Brown Group"
-                className="h-11 w-auto object-contain"
+                className="h-8 w-auto object-contain sm:h-11"
               />
             </div>
 
-            <div className="leading-tight">
-              <div className="text-[1.05rem] font-semibold tracking-[0.08em] text-black">
+            <div className="min-w-0 leading-tight">
+              <div className="truncate text-[0.92rem] font-semibold tracking-[0.06em] text-black sm:text-[1.05rem] sm:tracking-[0.08em]">
                 BROWN GROUP
               </div>
-              <div className="mt-1 text-xs uppercase tracking-[0.28em] text-neutral-500">
+              <div className="mt-1 truncate text-[10px] uppercase tracking-[0.22em] text-neutral-500 sm:text-xs sm:tracking-[0.28em]">
                 REAL ESTATE
               </div>
             </div>
@@ -210,12 +221,67 @@ export default function SalePropertiesPage() {
               צור קשר
             </Link>
           </nav>
+
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-neutral-200 bg-white text-black shadow-sm transition hover:border-[#d9873b] hover:bg-[#fff8f1] md:hidden"
+            aria-label="פתח תפריט"
+            aria-expanded={isMobileMenuOpen}
+          >
+            <span className="text-xl leading-none">
+              {isMobileMenuOpen ? "×" : "☰"}
+            </span>
+          </button>
         </div>
+
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.22 }}
+              className="border-t border-black/5 bg-white/95 px-4 py-4 backdrop-blur-xl md:hidden"
+            >
+              <div className="mx-auto grid max-w-7xl gap-3">
+                <Link
+                  href="/"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-800 shadow-sm"
+                >
+                  דף הבית
+                </Link>
+                <Link
+                  href="/properties/sale"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-800 shadow-sm"
+                >
+                  נכסים למכירה
+                </Link>
+                <Link
+                  href="/properties/rent"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-800 shadow-sm"
+                >
+                  נכסים להשכרה
+                </Link>
+                <Link
+                  href="/#contact"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-2xl bg-black px-4 py-3 text-center text-sm font-medium text-white shadow-sm"
+                >
+                  צור קשר
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      <section className="mx-auto max-w-7xl px-6 py-20">
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
         <motion.div
-          className="max-w-3xl mr-auto text-right"
+          className="mr-auto max-w-3xl text-right"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
@@ -224,25 +290,25 @@ export default function SalePropertiesPage() {
             Properties For Sale
           </div>
 
-          <h1 className="mt-5 text-5xl font-semibold leading-tight tracking-tight md:text-6xl">
+          <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-6xl">
             נכסים למכירה
             <br />
             בהתאמה מדויקת יותר
           </h1>
 
-          <p className="mt-6 text-lg leading-8 text-neutral-700">
+          <p className="mt-5 text-base leading-7 text-neutral-700 sm:mt-6 sm:text-lg sm:leading-8">
             דירות, נכסי יוקרה, משרדים והזדמנויות השקעה בתל אביב, עם ליווי אישי,
             תהליך מדויק ושירות ברמה גבוהה לאורך כל הדרך.
           </p>
         </motion.div>
 
         <motion.div
-          className="mt-10 rounded-[30px] border border-neutral-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]"
+          className="mt-8 rounded-[24px] border border-neutral-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:mt-10 sm:rounded-[30px] sm:p-5"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.65, delay: 0.1, ease: "easeOut" }}
         >
-          <div className="grid gap-4 md:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-5">
             <div>
               <label className="mb-2 block text-sm font-medium text-neutral-600">
                 אזור
@@ -295,7 +361,7 @@ export default function SalePropertiesPage() {
               </select>
             </div>
 
-            <div className="flex items-end">
+            <div className="flex items-end sm:col-span-2 md:col-span-1">
               <button className="w-full rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#1a1a1a]">
                 סינון נכסים
               </button>
@@ -303,7 +369,7 @@ export default function SalePropertiesPage() {
           </div>
         </motion.div>
 
-        <div className="mt-14 grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-7 md:grid-cols-2 xl:grid-cols-3">
           {saleProperties.map((property, index) => {
             const safeImages = propertyImagesMap[property.id] || [];
             const hasImages = safeImages.length > 0;
@@ -339,12 +405,12 @@ export default function SalePropertiesPage() {
                 }}
                 whileHover={{ y: -10, scale: 1.012 }}
                 whileTap={{ scale: 0.988 }}
-                className="group relative overflow-hidden rounded-[32px] border border-neutral-200 bg-white text-right shadow-[0_12px_32px_rgba(15,23,42,0.06)] transition-all duration-500 hover:border-[#d9873b]/70 hover:shadow-[0_30px_70px_rgba(15,23,42,0.16)]"
+                className="group relative overflow-hidden rounded-[28px] border border-neutral-200 bg-white text-right shadow-[0_12px_32px_rgba(15,23,42,0.06)] transition-all duration-500 hover:border-[#d9873b]/70 hover:shadow-[0_30px_70px_rgba(15,23,42,0.16)] sm:rounded-[32px]"
               >
                 <div className="pointer-events-none absolute inset-0 rounded-[32px] ring-1 ring-transparent transition duration-500 group-hover:ring-[#d9873b]/20" />
 
                 {hasImages ? (
-                  <div className="relative h-72 overflow-hidden bg-neutral-100">
+                  <div className="relative h-60 overflow-hidden bg-neutral-100 sm:h-72">
                     <AnimatePresence mode="wait">
                       <motion.img
                         key={currentImage}
@@ -398,18 +464,18 @@ export default function SalePropertiesPage() {
                   </div>
                 ) : null}
 
-                <div className="p-6">
-                  <div className="mb-3 flex items-center justify-between">
+                <div className="p-5 sm:p-6">
+                  <div className="mb-3 flex items-center justify-between gap-3">
                     <div className="inline-flex rounded-full border border-[#f1d0aa] bg-[#fff6ee] px-3 py-1 text-xs font-medium text-[#b96b24]">
                       {property.area}
                     </div>
 
-                    <div className="text-xs text-neutral-400 transition duration-300 group-hover:text-neutral-600">
+                    <div className="shrink-0 text-xs text-neutral-400 transition duration-300 group-hover:text-neutral-600">
                       Brown Group
                     </div>
                   </div>
 
-                  <h3 className="text-2xl font-semibold tracking-tight">
+                  <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">
                     {property.title}
                   </h3>
 
@@ -436,13 +502,13 @@ export default function SalePropertiesPage() {
                     </div>
                   )}
 
-                  <div className="mt-6 flex items-center justify-between border-t border-neutral-100 pt-5">
-                    <span className="text-2xl font-semibold tracking-tight transition duration-300 group-hover:text-black">
+                  <div className="mt-6 flex items-center justify-between gap-3 border-t border-neutral-100 pt-5">
+                    <span className="text-xl font-semibold tracking-tight transition duration-300 group-hover:text-black sm:text-2xl">
                       {property.price}
                     </span>
 
                     <motion.span
-                      className="rounded-2xl border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-300 group-hover:border-[#d9873b] group-hover:bg-[#fff8f1] group-hover:text-black"
+                      className="shrink-0 rounded-2xl border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-300 group-hover:border-[#d9873b] group-hover:bg-[#fff8f1] group-hover:text-black"
                       whileHover={{ x: -2 }}
                     >
                       לפרטים
@@ -465,9 +531,9 @@ export default function SalePropertiesPage() {
                 ease: "easeOut",
               }}
               whileHover={{ y: -8, scale: 1.01 }}
-              className="group relative overflow-hidden rounded-[32px] border border-dashed border-neutral-300 bg-white text-right shadow-[0_12px_32px_rgba(15,23,42,0.04)] transition-all duration-500 hover:border-[#d9873b]/60 hover:shadow-[0_24px_60px_rgba(15,23,42,0.10)]"
+              className="group relative overflow-hidden rounded-[28px] border border-dashed border-neutral-300 bg-white text-right shadow-[0_12px_32px_rgba(15,23,42,0.04)] transition-all duration-500 hover:border-[#d9873b]/60 hover:shadow-[0_24px_60px_rgba(15,23,42,0.10)] sm:rounded-[32px]"
             >
-              <div className="relative h-72 overflow-hidden bg-gradient-to-br from-neutral-100 via-[#f8f2eb] to-[#fff6ea]">
+              <div className="relative h-60 overflow-hidden bg-gradient-to-br from-neutral-100 via-[#f8f2eb] to-[#fff6ea] sm:h-72">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.95),transparent_35%)]" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent" />
                 <div className="absolute right-5 top-5 rounded-full border border-neutral-200 bg-white/90 px-3 py-1 text-xs font-medium text-neutral-700 shadow-sm backdrop-blur-md">
@@ -488,7 +554,7 @@ export default function SalePropertiesPage() {
                 </div>
               </div>
 
-              <div className="p-6">
+              <div className="p-5 sm:p-6">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="inline-flex rounded-full border border-[#f1d0aa] bg-[#fff6ee] px-3 py-1 text-xs font-medium text-[#b96b24]">
                     עדכון בקרוב
@@ -537,7 +603,7 @@ export default function SalePropertiesPage() {
       <AnimatePresence>
         {selectedProperty && (
           <motion.div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-3 py-4 backdrop-blur-sm sm:px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -545,7 +611,7 @@ export default function SalePropertiesPage() {
             onClick={() => setSelectedProperty(null)}
           >
             <motion.div
-              className="relative w-full max-w-4xl overflow-hidden rounded-[36px] border border-white/20 bg-white shadow-[0_30px_100px_rgba(0,0,0,0.25)]"
+              className="relative max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-[28px] border border-white/20 bg-white shadow-[0_30px_100px_rgba(0,0,0,0.25)] sm:rounded-[36px]"
               initial={{ opacity: 0, y: 40, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 30, scale: 0.96 }}
@@ -555,13 +621,13 @@ export default function SalePropertiesPage() {
               <button
                 type="button"
                 onClick={() => setSelectedProperty(null)}
-                className="absolute left-5 top-5 z-20 rounded-full bg-black px-4 py-2 text-sm text-white transition hover:bg-[#1a1a1a]"
+                className="absolute left-3 top-3 z-20 rounded-full bg-black px-3 py-2 text-xs text-white transition hover:bg-[#1a1a1a] sm:left-5 sm:top-5 sm:px-4 sm:py-2 sm:text-sm"
               >
                 סגור
               </button>
 
-              <div className="grid md:grid-cols-2">
-                <div className="relative min-h-[360px] overflow-hidden bg-gradient-to-br from-neutral-100 via-[#f5ede6] to-[#ffe8cc]">
+              <div className="grid max-h-[92vh] overflow-y-auto md:grid-cols-2">
+                <div className="relative min-h-[280px] overflow-hidden bg-gradient-to-br from-neutral-100 via-[#f5ede6] to-[#ffe8cc] sm:min-h-[360px]">
                   {popupImages.length > 0 && (
                     <>
                       <AnimatePresence mode="wait">
@@ -584,7 +650,7 @@ export default function SalePropertiesPage() {
                           <button
                             type="button"
                             onClick={prevPopupImage}
-                            className="absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-lg text-black shadow-md backdrop-blur transition hover:bg-white"
+                            className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-lg text-black shadow-md backdrop-blur transition hover:bg-white sm:right-4 sm:h-11 sm:w-11"
                           >
                             ›
                           </button>
@@ -592,7 +658,7 @@ export default function SalePropertiesPage() {
                           <button
                             type="button"
                             onClick={nextPopupImage}
-                            className="absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-lg text-black shadow-md backdrop-blur transition hover:bg-white"
+                            className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-lg text-black shadow-md backdrop-blur transition hover:bg-white sm:left-4 sm:h-11 sm:w-11"
                           >
                             ‹
                           </button>
@@ -602,12 +668,12 @@ export default function SalePropertiesPage() {
                   )}
                 </div>
 
-                <div className="p-8">
+                <div className="p-5 sm:p-8">
                   <div className="inline-flex rounded-full border border-[#f1d0aa] bg-[#fff6ee] px-3 py-1 text-xs font-medium text-[#b96b24]">
                     {selectedProperty.tag}
                   </div>
 
-                  <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-tight">
+                  <h2 className="mt-4 text-2xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-3xl">
                     {selectedProperty.title}
                   </h2>
 
@@ -615,7 +681,7 @@ export default function SalePropertiesPage() {
                     {selectedProperty.area}
                   </div>
 
-                  <div className="mt-6 rounded-2xl bg-[#faf7f3] p-4 text-sm leading-7 text-neutral-700">
+                  <div className="mt-5 rounded-2xl bg-[#faf7f3] p-4 text-sm leading-7 text-neutral-700 sm:mt-6">
                     {selectedProperty.details}
                   </div>
 
@@ -632,29 +698,29 @@ export default function SalePropertiesPage() {
                     </div>
                   )}
 
-                  <p className="mt-6 text-base leading-8 text-neutral-700">
+                  <p className="mt-5 text-sm leading-7 text-neutral-700 sm:mt-6 sm:text-base sm:leading-8">
                     {selectedProperty.description}
                   </p>
 
-                  <div className="mt-8 text-3xl font-semibold tracking-tight">
+                  <div className="mt-6 text-2xl font-semibold tracking-tight sm:mt-8 sm:text-3xl">
                     {selectedProperty.price}
                   </div>
 
-                  <div className="mt-8 flex flex-wrap gap-3">
+                  <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
                     <a
                       href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
                         `היי Brown Group, אני מעוניין בנכס למכירה: ${selectedProperty.title}`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-[#1a1a1a]"
+                      className="rounded-2xl bg-black px-5 py-3 text-center text-sm font-medium text-white transition hover:bg-[#1a1a1a]"
                     >
                       שליחה בוואטסאפ
                     </a>
 
                     <Link
                       href="/#contact"
-                      className="rounded-2xl border border-neutral-300 px-5 py-3 text-sm font-medium text-neutral-800 transition hover:border-[#d9873b] hover:bg-[#fff8f1]"
+                      className="rounded-2xl border border-neutral-300 px-5 py-3 text-center text-sm font-medium text-neutral-800 transition hover:border-[#d9873b] hover:bg-[#fff8f1]"
                     >
                       השאירו פרטים
                     </Link>
@@ -667,7 +733,7 @@ export default function SalePropertiesPage() {
       </AnimatePresence>
 
       <footer className="border-t border-neutral-200 bg-[#faf8f5]">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-4">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 sm:py-14 md:grid-cols-4 md:gap-10">
           <div>
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-neutral-200 bg-white shadow-sm">
@@ -756,7 +822,7 @@ export default function SalePropertiesPage() {
         </div>
 
         <div className="border-t border-neutral-200">
-          <div className="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-5 text-xs text-neutral-500 md:flex-row md:items-center md:justify-between">
+          <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-5 text-xs text-neutral-500 sm:px-6 md:flex-row md:items-center md:justify-between">
             <span>© 2026 Brown Group. כל הזכויות שמורות.</span>
             <span>עיצוב נקי, יוקרתי ומותאם לנדל״ן בתל אביב.</span>
           </div>
