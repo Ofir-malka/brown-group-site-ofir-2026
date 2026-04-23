@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://brown-group-site-ofir-2026.vercel.app"),
+  metadataBase: new URL("https://browngroup.it.com"),
   title: {
     default: "Brown Group | נדל״ן יוקרתי בתל אביב",
     template: "%s | Brown Group",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "he_IL",
-    url: "https://brown-group-site-ofir-2026.vercel.app",
+    url: "https://browngroup.it.com",
     siteName: "Brown Group",
     title: "Brown Group | נדל״ן יוקרתי בתל אביב",
     description:
