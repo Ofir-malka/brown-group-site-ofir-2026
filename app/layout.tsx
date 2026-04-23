@@ -18,6 +18,9 @@ export const metadata: Metadata = {
     default: "Brown Group | נדל״ן יוקרתי בתל אביב",
     template: "%s | Brown Group",
   },
+  icons: {
+  icon: "/favicon.png",
+},
   description:
     "Brown Group מתמחה בנדל״ן יוקרתי בתל אביב: דירות למכירה, נכסים להשכרה, פנטהאוזים, השקעות וליווי אישי ברמה גבוהה.",
   keywords: [
