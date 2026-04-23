@@ -13,16 +13,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://browngroup.it.com"),
-  title: {
-    default: "Brown Group | נדל״ן יוקרתי בתל אביב",
-    template: "%s | Brown Group",
-  },
- 
+metadataBase: new URL("https://browngroup.it.com"),
+
+title: {
+  default: "בראון גרופ | נדל״ן בתל אביב",
+  template: "%s | בראון גרופ",
+},
+
+applicationName: "בראון גרופ",
+ creator: "בראון גרופ",
+publisher: "בראון גרופ",
+
   description:
     "Brown Group מתמחה בנדל״ן יוקרתי בתל אביב: דירות למכירה, נכסים להשכרה, פנטהאוזים, השקעות וליווי אישי ברמה גבוהה.",
   keywords: [
     "Brown Group",
+    "בראון גרופ",
     "נדל״ן בתל אביב",
     "נדל״ן יוקרתי",
     "דירות למכירה בתל אביב",
@@ -41,7 +47,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "he_IL",
     url: "https://browngroup.it.com",
-    siteName: "Brown Group",
+    siteName: "בראון גרופ",
     title: "Brown Group | נדל״ן יוקרתי בתל אביב",
     description:
       "דירות למכירה, נכסים להשכרה, פנטהאוזים והשקעות בתל אביב עם שירות אישי, מדויק ומקצועי.",
