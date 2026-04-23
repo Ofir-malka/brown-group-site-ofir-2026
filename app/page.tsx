@@ -341,6 +341,9 @@ export default function RealEstateAIWebsite() {
 };
   return (
     <div dir="rtl" className="min-h-screen overflow-x-hidden bg-white text-black">
+      <h1 className="sr-only">
+  בראון גרופ נדל״ן בתל אביב
+</h1>
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
           <Link
