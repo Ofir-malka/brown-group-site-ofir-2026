@@ -537,12 +537,12 @@ export default function RealEstateAIWebsite() {
             </div>
 
             <h1 className="max-w-3xl text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-4xl md:text-7xl">
-              הנדל״ן היוקרתי
-              <br />
-              פוגש חוויית
-              <br />
-              דיגיטל חדשה.
-            </h1>
+  בראון גרופ נדל״ן בתל אביב
+  <br />
+  דירות יוקרה להשכרה
+  <br />
+  ולמכירה
+</h1>
 
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:mt-7 sm:text-lg md:text-xl">
               Brown Group מציגה דירות יוקרה, פנטהאוזים, נכסים להשכרה והזדמנויות
