@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -385,8 +386,23 @@ useEffect(() => {
     }));
   };
 
-  const handleWhatsAppSubmit = () => {
-    const text = `היי Brown Group,
+const handleWhatsAppSubmit = async () => {
+  const { error } = await supabase.from("leads").insert([
+    {
+      name: formData.fullName,
+      phone: formData.phone,
+      email: formData.email,
+      message: formData.message,
+    },
+  ]);
+
+  if (error) {
+    console.error("Supabase error:", error);
+    alert("הייתה בעיה בשמירת הפרטים. נסו שוב.");
+    return;
+  }
+
+  const text = `היי Brown Group,
 קיבלתי פנייה חדשה מהאתר:
 
 שם מלא: ${formData.fullName || "-"}
@@ -394,10 +410,17 @@ useEffect(() => {
 אימייל: ${formData.email || "-"}
 הודעה: ${formData.message || "-"}`;
 
-    const encodedText = encodeURIComponent(text);
-    const url = `https://wa.me/${whatsappNumber}?text=${encodedText}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+  const encodedText = encodeURIComponent(text);
+  const url = `https://wa.me/${whatsappNumber}?text=${encodedText}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+
+  setFormData({
+    fullName: "",
+    phone: "",
+    email: "",
+    message: "",
+  });
+};
 
   const sendChatMessage = async () => {
     const trimmed = chatInput.trim();
