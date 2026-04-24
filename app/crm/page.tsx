@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-  "https://lpoaampixotovyzomqqp.supabase.co",
-  "sb_publishable_tM198LKh5GTLpGNTqRW7Uw_9dM81vzY"
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 type Lead = {
@@ -38,7 +38,7 @@ export default async function CRMPage() {
 
         {error ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-red-300">
-            שגיאה בטעינת הלידים
+            שגיאה בטעינת הלידים: {error.message}שגיאה בטעינת הלידים
           </div>
         ) : (
           <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] shadow-2xl">
