@@ -387,20 +387,25 @@ useEffect(() => {
   };
 
 const handleWhatsAppSubmit = async () => {
-  const { error } = await supabase.from("leads").insert([
-    {
-      name: formData.fullName,
-      phone: formData.phone,
-      email: formData.email,
-      message: formData.message,
-    },
-  ]);
+const res = await fetch("/api/leads", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    name: formData.fullName,
+    phone: formData.phone,
+    email: formData.email,
+    message: formData.message,
+  }),
+});
 
-  if (error) {
-    console.error("Supabase error:", error);
-    alert("הייתה בעיה בשמירת הפרטים. נסו שוב.");
-    return;
-  }
+if (!res.ok) {
+  const data = await res.json().catch(() => ({}));
+  console.error("Lead API error:", data);
+  alert("הייתה בעיה בשמירת הפרטים. נסו שוב.");
+  return;
+}
 
   const text = `היי Brown Group,
 קיבלתי פנייה חדשה מהאתר:
