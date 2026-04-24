@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-  "https://lpoaampixotovyzomqqp.supabase.co",
+  "https://lpoaampixotoyvzomqqp.supabase.co",
   "sb_publishable_tM198LKh5GTIpGNTqRW7uw_9dM81vzY"
 );
 
