@@ -1,0 +1,97 @@
+import Link from "next/link";
+
+export const metadata = {
+  title: "דירות בתל אביב להשכרה ולמכירה | בראון גרופ",
+  description:
+    "בראון גרופ מתמחה בדירות להשכרה ולמכירה בתל אביב, דירות יוקרה, פנטהאוזים ונכסים נבחרים באזורים המבוקשים בעיר.",
+  alternates: {
+    canonical: "https://browngroup.it.com/apartments-tel-aviv",
+  },
+};
+
+export default function ApartmentsTelAvivPage() {
+  return (
+    <main className="bg-white px-6 py-20 text-right text-neutral-900" dir="rtl">
+      <section className="mx-auto max-w-4xl">
+        <p className="mb-4 text-sm font-medium text-[#d9873b]">
+          Brown Group Real Estate
+        </p>
+
+        <h1 className="text-4xl font-bold leading-tight md:text-6xl">
+          דירות בתל אביב להשכרה ולמכירה
+        </h1>
+
+        <p className="mt-6 text-lg leading-8 text-neutral-600">
+          בראון גרופ מתמחה באיתור ושיווק דירות בתל אביב להשכרה ולמכירה,
+          עם דגש על דירות יוקרה, פנטהאוזים, נכסים בבלעדיות ונכסים באזורים
+          המבוקשים ביותר בעיר.
+        </p>
+
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
+          <Link
+            href="/properties/rent"
+            className="rounded-3xl border border-neutral-200 p-6 transition hover:border-[#d9873b]"
+          >
+            <h2 className="text-2xl font-semibold">דירות להשכרה בתל אביב</h2>
+            <p className="mt-3 text-neutral-600">
+              מבחר דירות להשכרה בתל אביב, כולל דירות יוקרה, דירות חדשות
+              ונכסים באזורים מרכזיים.
+            </p>
+          </Link>
+
+          <Link
+            href="/properties/sale"
+            className="rounded-3xl border border-neutral-200 p-6 transition hover:border-[#d9873b]"
+          >
+            <h2 className="text-2xl font-semibold">דירות למכירה בתל אביב</h2>
+            <p className="mt-3 text-neutral-600">
+              נכסים למכירה בתל אביב, דירות להשקעה, דירות מגורים ופנטהאוזים
+              במיקומים מבוקשים.
+            </p>
+          </Link>
+        </div>
+
+        <section className="mt-14 space-y-5 leading-8 text-neutral-700">
+          <h2 className="text-3xl font-semibold">
+            נדל״ן בתל אביב עם ליווי אישי
+          </h2>
+
+          <p>
+            שוק הנדל״ן בתל אביב דורש ידע מקומי, זמינות גבוהה והיכרות עם
+            הנכסים הנכונים. בראון גרופ מלווה לקוחות בתהליך חיפוש דירה
+            להשכרה או רכישת נכס בעיר, תוך התאמה לצרכים, לתקציב ולסגנון החיים.
+          </p>
+
+          <p>
+            בין אם אתם מחפשים דירה להשכרה בצפון תל אביב, נכס למכירה במרכז
+            העיר, פנטהאוז יוקרתי או דירה להשקעה — הצוות של בראון גרופ כאן
+            כדי לעזור לכם למצוא את הנכס המתאים.
+          </p>
+        </section>
+
+        <div className="mt-12 flex flex-wrap gap-4">
+          <Link
+            href="/properties/rent"
+            className="rounded-2xl bg-black px-6 py-3 text-white transition hover:bg-neutral-800"
+          >
+            נכסים להשכרה
+          </Link>
+
+          <Link
+            href="/properties/sale"
+            className="rounded-2xl border border-neutral-300 px-6 py-3 transition hover:border-black"
+          >
+            נכסים למכירה
+          </Link>
+
+          <Link
+            href="/#contact"
+            className="rounded-2xl border border-neutral-300 px-6 py-3 transition hover:border-black"
+          >
+            צור קשר
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}

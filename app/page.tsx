@@ -518,6 +518,14 @@ useEffect(() => {
         <span className="absolute inset-x-3 bottom-1 h-px origin-right scale-x-0 bg-[#d9873b] transition-transform duration-300 group-hover:scale-x-100" />
       </Link>
 
+<Link
+  href="/apartments-tel-aviv"
+  className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-800 shadow-sm transition hover:border-[#d9873b]/40 hover:bg-white"
+>
+  <span className="relative z-10">דירות למכירה בתל אביב</span>
+  <span className="absolute inset-x-3 bottom-1 h-px origin-right scale-x-0 bg-[#d9873b] transition-transform duration-300 group-hover:scale-x-100" />
+</Link>
+
       <a
         href="#contact"
         className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl border border-transparent bg-white/70 px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-[0_4px_14px_rgba(15,23,42,0.04)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d9873b]/40 hover:bg-white hover:text-black hover:shadow-[0_14px_30px_rgba(217,135,59,0.10)]"
