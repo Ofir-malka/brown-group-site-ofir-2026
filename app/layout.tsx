@@ -27,16 +27,23 @@ publisher: "בראון גרופ",
   description:
     "Brown Group מתמחה בנדל״ן יוקרתי בתל אביב: דירות למכירה, נכסים להשכרה, פנטהאוזים, השקעות וליווי אישי ברמה גבוהה.",
   keywords: [
-    "Brown Group",
-    "בראון גרופ",
-    "נדל״ן בתל אביב",
-    "נדל״ן יוקרתי",
-    "דירות למכירה בתל אביב",
-    "דירות להשכרה בתל אביב",
-    "פנטהאוז תל אביב",
-    "תיווך נדל״ן",
-    "נכסי יוקרה",
-  ],
+"בראון גרופ",
+"בראון גרופ נדלן",
+"בראון גרופ נדל״ן",
+"Brown Group",
+"Brown Group Real Estate",
+"בראון גרופ תל אביב",
+"בראון גרופ נכסים",
+ "Brown Group",
+"בראון גרופ",
+"נדל״ן בתל אביב",
+"נדל״ן יוקרתי",
+"דירות למכירה בתל אביב",
+"דירות להשכרה בתל אביב",
+"פנטהאוז תל אביב",
+"תיווך נדל״ן",
+"נכסי יוקרה",
+],
 alternates: {
   canonical: "https://browngroup.it.com",
 },
@@ -74,6 +81,44 @@ alternates: {
   },
 };
 
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  "@id": "https://browngroup.it.com/#realestateagent",
+  name: "בראון גרופ",
+  alternateName: [
+    "Brown Group",
+    "Brown Group Real Estate",
+    "בראון גרופ נדל״ן",
+    "בראון גרופ נדלן",
+  ],
+  url: "https://browngroup.it.com",
+  logo: "https://browngroup.it.com/logo.jpg",
+  image: "https://browngroup.it.com/logo.jpg",
+  description:
+    "בראון גרופ הוא משרד תיווך נדל״ן בתל אביב המתמחה בדירות יוקרה להשכרה ולמכירה, פנטהאוזים ונכסים נבחרים.",
+  telephone: "+972535994391",
+  email: "info@browngroup.co.il",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "תל אביב",
+    addressCountry: "IL",
+  },
+  areaServed: [
+    {
+      "@type": "City",
+      name: "תל אביב",
+    },
+    {
+      "@type": "Country",
+      name: "ישראל",
+    },
+  ],
+  sameAs: [
+    "https://browngroup.it.com",
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -87,8 +132,14 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-black">
-        {children}
-      </body>
+  <script
+    type="application/ld+json"
+    dangerouslySetInnerHTML={{
+      __html: JSON.stringify(organizationSchema),
+    }}
+  />
+  {children}
+</body>
     </html>
   );
 }
