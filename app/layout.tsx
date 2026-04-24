@@ -48,6 +48,12 @@ alternates: {
   canonical: "https://browngroup.it.com",
 },
 
+icons: {
+  icon: "/icon.png",
+  shortcut: "/icon.png",
+  apple: "/icon.png",
+},
+
   verification: {
     google: "Wa_FcKZ5oUluCkLY4piSlJOtjcWBiW3ZUif5ucfmiNk",
   },
