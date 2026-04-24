@@ -2,8 +2,10 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+
 
 const whatsappNumber = "972535994391";
 
@@ -198,7 +200,8 @@ const propertyCardNotes: Record<string, string> = {
     "דירת פרימיום בפרויקט גינדי עם נוף פתוח, מרחבים גדולים ועיצוב מודרני יוקרתי.",
 };
 
-export default function RentPropertiesPage() {
+function RentPropertiesContent() {
+ const searchParams = useSearchParams(); 
   const [selectedProperty, setSelectedProperty] = useState<RentProperty | null>(
     null
   );
@@ -239,7 +242,21 @@ export default function RentPropertiesPage() {
       intervals.forEach((interval) => clearInterval(interval));
     };
   }, [propertyImagesMap, pausedSliders]);
+useEffect(() => {
+  const propertyId = searchParams.get("property");
+  if (!propertyId) return;
 
+  const timer = setTimeout(() => {
+    const property = rentProperties.find((item) => item.id === propertyId);
+
+    if (property) {
+      setSelectedProperty(property);
+      setActivePopupImage(0);
+    }
+  }, 0);
+
+  return () => clearTimeout(timer);
+}, [searchParams]);
   const popupImages = useMemo(
     () => selectedProperty?.images?.filter(Boolean) || [],
     [selectedProperty]
@@ -961,5 +978,12 @@ export default function RentPropertiesPage() {
         </div>
       </footer>
     </div>
+  );
+}
+export default function RentPropertiesPage() {
+  return (
+    <Suspense fallback={null}>
+      <RentPropertiesContent />
+    </Suspense>
   );
 }
