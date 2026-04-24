@@ -830,11 +830,9 @@ useEffect(() => {
               About Brown Group
             </div>
 
-            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-5xl">
-              משרד תיווך שמביא
-              <br />
-              סטנדרט אחר של שירות.
-            </h2>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight">
+  קבוצת בראון גרופ
+</h2>
 
             <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-700 sm:mt-6 sm:text-lg sm:leading-8">
               Brown Group מתמחה בדירות, נכסי יוקרה, משרדים והשקעות בתל אביב, עם
