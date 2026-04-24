@@ -830,7 +830,7 @@ useEffect(() => {
               About Brown Group
             </div>
 
-            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight">
+            <h2 className="mt-4 text-5xl font-semibold leading-tight tracking-tight">
   קבוצת בראון גרופ
 </h2>
 
