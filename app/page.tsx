@@ -291,7 +291,7 @@ useEffect(() => {
   const interval = setInterval(() => {
     setActiveHeroProperty((prev) => (prev + 1) % heroRentProperties.length);
     setActivePopupImage(0);
-  }, 4200);
+  }, 12000);
 
   return () => clearInterval(interval);
 }, [shouldReduceMotion]);
@@ -302,7 +302,7 @@ useEffect(() => {
 
   const interval = setInterval(() => {
     setActivePopupImage((prev) => (prev + 1) % activeProperty.images.length);
-  }, 3200);
+  }, 6500);
 
   return () => clearInterval(interval);
 }, [activeHeroProperty, shouldReduceMotion]);
@@ -754,17 +754,23 @@ useEffect(() => {
       className="group w-full overflow-hidden rounded-[30px] border border-white/10 bg-white/10 text-right shadow-[0_30px_90px_rgba(0,0,0,0.22)] backdrop-blur-xl"
     >
       <div className="relative h-[520px] overflow-hidden sm:h-[620px]">
-        <motion.img
-          key={`${heroRentProperties[activeHeroProperty].id}-${activePopupImage}`}
-          src={
-            heroRentProperties[activeHeroProperty].images[
-              activePopupImage %
-                heroRentProperties[activeHeroProperty].images.length
-            ]
-          }
-          alt={heroRentProperties[activeHeroProperty].title}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+        <AnimatePresence mode="wait">
+  <motion.img
+    key={`${heroRentProperties[activeHeroProperty].id}-${activePopupImage}`}
+    src={
+      heroRentProperties[activeHeroProperty].images[
+        activePopupImage %
+          heroRentProperties[activeHeroProperty].images.length
+      ]
+    }
+    alt={heroRentProperties[activeHeroProperty].title}
+    className="absolute inset-0 h-full w-full object-cover"
+    initial={shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }}
+    animate={{ opacity: 1, scale: 1 }}
+    exit={shouldReduceMotion ? {} : { opacity: 0, scale: 1.02 }}
+    transition={{ duration: 0.75, ease: "easeOut" }}
+  />
+</AnimatePresence>
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
@@ -1017,14 +1023,7 @@ useEffect(() => {
           </a>
         </div>
 
-        <div
-  className="
-    no-scrollbar
-    mt-10 flex gap-5 overflow-x-auto pb-2
-    scroll-smooth snap-x snap-mandatory
-    sm:mt-14 sm:gap-7
-  "
->
+        <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-7 md:grid-cols-3">
   {featuredProperties.map((property, index) => {
     const safeImages = propertyImagesMap[property.id] || [];
     const activeIndex = activeImages[property.id] || 0;
@@ -1059,7 +1058,7 @@ useEffect(() => {
         }}
         whileHover={{ y: -10, scale: 1.012 }}
         whileTap={{ scale: 0.988 }}
-        className="group relative min-w-[85%] snap-center overflow-hidden rounded-[32px] border border-neutral-200 bg-white text-right shadow-[0_12px_32px_rgba(15,23,42,0.06)] transition-all duration-500 hover:border-[#d9873b]/70 hover:shadow-[0_30px_70px_rgba(15,23,42,0.16)] sm:min-w-[420px] lg:min-w-[430px]"
+        className="group relative overflow-hidden rounded-[32px] border border-neutral-200 bg-white text-right shadow-[0_12px_32px_rgba(15,23,42,0.06)] transition-all duration-500 hover:border-[#d9873b]/70 hover:shadow-[0_30px_70px_rgba(15,23,42,0.16)]"
       >
         <div className="pointer-events-none absolute inset-0 rounded-[32px] ring-1 ring-transparent transition duration-500 group-hover:ring-[#d9873b]/20" />
 
