@@ -37,9 +37,10 @@ publisher: "בראון גרופ",
     "תיווך נדל״ן",
     "נכסי יוקרה",
   ],
-  alternates: {
-    canonical: "/",
-  },
+alternates: {
+  canonical: "https://browngroup.it.com",
+},
+
   verification: {
     google: "Wa_FcKZ5oUluCkLY4piSlJOtjcWBiW3ZUif5ucfmiNk",
   },
