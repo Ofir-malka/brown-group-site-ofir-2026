@@ -127,4 +127,4 @@ if (!supabaseUrl || !supabaseKey) {
       </div>
     </main>
   );
-}
+}// reload env
