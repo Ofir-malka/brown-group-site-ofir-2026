@@ -15,7 +15,9 @@ type Lead = {
 export default async function CRMPage() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
+console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log("SERVICE ROLE:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "EXISTS" : "MISSING");
+  
   if (!supabaseUrl || !supabaseKey) {
     return (
       <main dir="rtl" className="min-h-screen bg-neutral-950 text-white p-8">
