@@ -134,78 +134,94 @@ export default function CRMPage() {
   }
 
 return (
-  <main dir="rtl" className="min-h-screen bg-neutral-950 text-white p-8">
-    <div className="mx-auto max-w-7xl">
+  <main dir="rtl" className="min-h-screen bg-neutral-950 text-white flex">
 
-      {/* HEADER */}
-      <div className="mb-10 flex flex-col gap-6">
+    {/* SIDEBAR */}
+    <aside className="w-64 bg-black/40 border-l border-white/10 p-6 flex flex-col justify-between">
+      <div>
+        <h2 className="text-xl font-bold mb-10">BROWN CRM</h2>
 
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold">מערכת ניהול לידים</h1>
+        <nav className="space-y-3">
+          <button className="w-full text-right px-4 py-3 rounded-xl bg-orange-500/20">
+            לידים
+          </button>
+          <button className="w-full text-right px-4 py-3 rounded-xl hover:bg-white/10">
+            סטטיסטיקות
+          </button>
+        </nav>
+      </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={fetchLeads}
-              className="rounded-xl bg-blue-500 px-5 py-2 font-bold"
-            >
-              רענן
-            </button>
+      <button
+        onClick={() => {
+          sessionStorage.removeItem("crm_logged_in");
+          setIsLoggedIn(false);
+        }}
+        className="mt-10 rounded-xl border border-white/20 px-4 py-3"
+      >
+        יציאה
+      </button>
+    </aside>
 
-            <button
-              onClick={() => {
-                sessionStorage.removeItem("crm_logged_in");
-                setIsLoggedIn(false);
-              }}
-              className="rounded-xl border border-white/20 px-5 py-2"
-            >
-              יציאה
-            </button>
-          </div>
+    {/* MAIN */}
+    <div className="flex-1 p-8">
+
+      {/* TOP BAR */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">ניהול לידים</h1>
+
+        <button
+          onClick={fetchLeads}
+          className="bg-blue-500 px-5 py-2 rounded-xl font-bold"
+        >
+          רענן
+        </button>
+      </div>
+
+      {/* STATS */}
+      <div className="grid grid-cols-3 gap-4 mb-8">
+
+        <div className="rounded-2xl p-6 bg-gradient-to-br from-orange-500 to-orange-700">
+          <p className="text-sm opacity-80">סה״כ לידים</p>
+          <p className="text-3xl font-bold">{leads.length}</p>
         </div>
 
-        {/* STATS */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="rounded-2xl bg-white/5 p-6 text-center">
-            <p className="text-sm text-neutral-400">סה״כ לידים</p>
-            <p className="text-3xl font-bold">{leads.length}</p>
-          </div>
-
-          <div className="rounded-2xl bg-white/5 p-6 text-center">
-            <p className="text-sm text-neutral-400">תוצאות חיפוש</p>
-            <p className="text-3xl font-bold">{filteredLeads.length}</p>
-          </div>
-
-          <div className="rounded-2xl bg-white/5 p-6 text-center">
-            <p className="text-sm text-neutral-400">חדשים היום</p>
-            <p className="text-3xl font-bold">
-              {
-                leads.filter(l =>
-                  new Date(l.created_at).toDateString() === new Date().toDateString()
-                ).length
-              }
-            </p>
-          </div>
+        <div className="rounded-2xl p-6 bg-gradient-to-br from-blue-500 to-blue-700">
+          <p className="text-sm opacity-80">תוצאות חיפוש</p>
+          <p className="text-3xl font-bold">{filteredLeads.length}</p>
         </div>
+
+        <div className="rounded-2xl p-6 bg-gradient-to-br from-green-500 to-green-700">
+          <p className="text-sm opacity-80">חדשים היום</p>
+          <p className="text-3xl font-bold">
+            {
+              leads.filter(l =>
+                new Date(l.created_at).toDateString() === new Date().toDateString()
+              ).length
+            }
+          </p>
+        </div>
+
       </div>
 
       {/* SEARCH */}
       <input
-        placeholder="חפש לפי שם / טלפון / אימייל..."
+        placeholder="🔍 חפש לידים..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="mb-6 w-full rounded-xl bg-black/40 px-5 py-4 text-white"
+        className="mb-6 w-full rounded-xl bg-black/40 px-5 py-4 text-white border border-white/10 focus:border-orange-500 outline-none"
       />
 
       {/* LOADING */}
-      {loading && <p className="text-center text-neutral-400">טוען לידים...</p>}
+      {loading && <p className="text-center text-neutral-400">טוען...</p>}
 
       {/* ERROR */}
       {error && <p className="text-red-400">{error}</p>}
 
       {/* TABLE */}
       {!loading && (
-        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] shadow-2xl">
+        <div className="rounded-3xl overflow-hidden border border-white/10 bg-black/30">
           <table className="w-full text-right">
+
             <thead className="bg-white/5 text-sm text-neutral-300">
               <tr>
                 <th className="p-5">תאריך</th>
@@ -219,27 +235,27 @@ return (
 
             <tbody>
               {filteredLeads.map((lead) => (
-                <tr key={lead.id} className="border-t border-white/10 hover:bg-white/[0.04]">
-                  
+                <tr key={lead.id} className="border-t border-white/10 hover:bg-white/5 transition">
+
                   <td className="p-5 text-sm text-neutral-400">
                     {new Date(lead.created_at).toLocaleDateString("he-IL")}
                   </td>
 
-                  <td className="p-5 font-semibold">{lead.name || "-"}</td>
+                  <td className="p-5 font-semibold">{lead.name}</td>
 
-                  <td className="p-5">{lead.phone || "-"}</td>
+                  <td className="p-5">{lead.phone}</td>
 
-                  <td className="p-5 text-neutral-300">{lead.email || "-"}</td>
+                  <td className="p-5">{lead.email}</td>
 
-                  <td className="p-5 max-w-md text-neutral-300">
-                    {lead.message || "-"}
+                  <td className="p-5 max-w-xs truncate">
+                    {lead.message}
                   </td>
 
                   <td className="p-5">
                     <a
                       href={`https://wa.me/972${lead.phone?.replace(/^0/, "")}`}
                       target="_blank"
-                      className="rounded-full bg-green-500 px-4 py-2 text-sm font-bold text-black"
+                      className="bg-green-500 px-4 py-2 rounded-full text-black font-bold hover:bg-green-400"
                     >
                       וואטסאפ
                     </a>
@@ -247,18 +263,12 @@ return (
 
                 </tr>
               ))}
-
-              {!filteredLeads.length && (
-                <tr>
-                  <td colSpan={6} className="p-10 text-center text-neutral-400">
-                    אין תוצאות
-                  </td>
-                </tr>
-              )}
             </tbody>
+
           </table>
         </div>
       )}
+
     </div>
   </main>
 );
