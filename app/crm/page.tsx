@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 console.log("CRM LOADED");
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
-export const preferredRegion = "fra1";
+export const preferredRegion = "iad1";
 
 type Lead = {
   id: number;
