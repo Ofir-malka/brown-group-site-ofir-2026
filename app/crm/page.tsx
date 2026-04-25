@@ -27,11 +27,26 @@ console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
     );
   }
 
-  const supabase = createClient(supabaseUrl, supabaseKey);
-  const { data: leads, error } = await supabase
-    .from("leads")
-    .select("*")
-    .order("created_at", { ascending: false });
+let leads = null;
+let error = null;
+
+try {
+  const res = await fetch(`${supabaseUrl}/rest/v1/leads?select=*&order=created_at.desc`, {
+    headers: {
+      apikey: supabaseKey!,
+      Authorization: `Bearer ${supabaseKey}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch leads");
+  }
+
+  leads = await res.json();
+} catch (err: any) {
+  error = err;
+}
 
   return (
     <main dir="rtl" className="min-h-screen bg-neutral-950 text-white p-8">
