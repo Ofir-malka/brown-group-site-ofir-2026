@@ -1,28 +1,37 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
-  const username = process.env.CRM_USERNAME;
-  const password = process.env.CRM_PASSWORD;
+export function middleware(request: NextRequest) {
+  const auth = request.headers.get("authorization");
 
-  const basicAuth = req.headers.get("authorization");
+  const username = "Gefen Brown";
+  const password = "Brown0511!";
 
-  if (basicAuth) {
-    const authValue = basicAuth.split(" ")[1];
-    const [user, pass] = atob(authValue).split(":");
-
-    if (user === username && pass === password) {
-      return NextResponse.next();
-    }
+  if (!auth) {
+    return new Response("Authentication required", {
+      status: 401,
+      headers: {
+        "WWW-Authenticate": 'Basic realm="Secure Area"',
+      },
+    });
   }
 
-  return new NextResponse("Authentication required", {
-    status: 401,
-    headers: {
-      "WWW-Authenticate": 'Basic realm="Brown Group CRM"',
-    },
-  });
+  const base64Credentials = auth.split(" ")[1];
+  const credentials = atob(base64Credentials);
+  const [user, pass] = credentials.split(":");
+
+  if (user !== username || pass !== password) {
+    return new Response("Access denied", {
+      status: 401,
+      headers: {
+        "WWW-Authenticate": 'Basic realm="Secure Area"',
+      },
+    });
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/crm/:path*"],
+  matcher: ["/crm"],
 };
