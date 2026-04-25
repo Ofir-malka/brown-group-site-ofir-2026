@@ -2,10 +2,6 @@ import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 type Lead = {
   id: number;
@@ -17,6 +13,18 @@ type Lead = {
 };
 
 export default async function CRMPage() {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return (
+      <main dir="rtl" className="min-h-screen bg-neutral-950 text-white p-8">
+        חסרים משתני סביבה של Supabase
+      </main>
+    );
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
   const { data: leads, error } = await supabase
     .from("leads")
     .select("*")
