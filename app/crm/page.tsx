@@ -9,6 +9,7 @@ type Lead = {
   email: string;
   message: string;
   created_at: string;
+  status: string;
 };
 
 const CRM_USER = "Gefen Brown";
@@ -39,40 +40,51 @@ export default function CRMPage() {
     try {
       setLoading(true);
 
-      if (!supabaseUrl || !supabaseKey) {
-        setError("חסר חיבור ל-Supabase");
-        return;
-      }
-
       const res = await fetch(
         `${supabaseUrl}/rest/v1/leads?select=*&order=created_at.desc`,
         {
           headers: {
-            apikey: supabaseKey,
+            apikey: supabaseKey!,
             Authorization: `Bearer ${supabaseKey}`,
           },
         }
       );
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text);
-      }
-
       const data = await res.json();
       setLeads(data);
       setFilteredLeads(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "שגיאה לא ידועה");
+      setError("שגיאה בטעינת לידים");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      fetchLeads();
+  // ✅ פונקציה מתוקנת
+  const updateStatus = async (id: number, newStatus: string) => {
+    try {
+      await fetch(`${supabaseUrl}/rest/v1/leads?id=eq.${id}`, {
+        method: "PATCH",
+        headers: {
+          apikey: supabaseKey!,
+          Authorization: `Bearer ${supabaseKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      setLeads((prev) =>
+        prev.map((l) =>
+          l.id === id ? { ...l, status: newStatus } : l
+        )
+      );
+    } catch (err) {
+      console.error(err);
     }
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) fetchLeads();
   }, [isLoggedIn]);
 
   useEffect(() => {
@@ -81,7 +93,6 @@ export default function CRMPage() {
         .toLowerCase()
         .includes(search.toLowerCase())
     );
-
     setFilteredLeads(filtered);
   }, [search, leads]);
 
@@ -99,177 +110,112 @@ export default function CRMPage() {
 
   if (!isLoggedIn) {
     return (
-      <main dir="rtl" className="min-h-screen bg-neutral-950 text-white flex items-center justify-center p-6">
-        <form
-          onSubmit={handleLogin}
-          className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[0.04] p-8 shadow-2xl"
-        >
-          <h1 className="text-3xl font-bold text-center">כניסה למערכת</h1>
+      <main className="min-h-screen bg-neutral-950 flex items-center justify-center">
+        <form onSubmit={handleLogin} className="bg-black p-8 rounded-2xl w-96">
+          <h1 className="text-white text-2xl mb-6">כניסה</h1>
 
-          <div className="mt-8 space-y-4">
-            <input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="שם משתמש"
-              className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4"
-            />
+          <input
+            placeholder="שם משתמש"
+            className="w-full mb-3 p-3 rounded bg-neutral-800 text-white"
+            onChange={(e) => setUsername(e.target.value)}
+          />
 
-            <input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              placeholder="סיסמה"
-              className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4"
-            />
-          </div>
+          <input
+            placeholder="סיסמה"
+            type="password"
+            className="w-full mb-3 p-3 rounded bg-neutral-800 text-white"
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          {loginError && <p className="mt-4 text-red-400">{loginError}</p>}
+          {loginError && <p className="text-red-500">{loginError}</p>}
 
-          <button className="mt-6 w-full rounded-2xl bg-orange-500 px-5 py-4 font-bold text-black">
-            התחברות
+          <button className="w-full bg-orange-500 p-3 rounded mt-3">
+            התחבר
           </button>
         </form>
       </main>
     );
   }
 
-return (
-  <main dir="rtl" className="min-h-screen bg-neutral-950 text-white flex">
+  return (
+    <main className="min-h-screen bg-neutral-950 text-white p-8">
 
-    {/* SIDEBAR */}
-    <aside className="w-64 bg-black/40 border-l border-white/10 p-6 flex flex-col justify-between">
-      <div>
-        <h2 className="text-xl font-bold mb-10">BROWN CRM</h2>
+      <h1 className="text-3xl font-bold mb-6">CRM לידים</h1>
 
-        <nav className="space-y-3">
-          <button className="w-full text-right px-4 py-3 rounded-xl bg-orange-500/20">
-            לידים
-          </button>
-          <button className="w-full text-right px-4 py-3 rounded-xl hover:bg-white/10">
-            סטטיסטיקות
-          </button>
-        </nav>
-      </div>
-
-      <button
-        onClick={() => {
-          sessionStorage.removeItem("crm_logged_in");
-          setIsLoggedIn(false);
-        }}
-        className="mt-10 rounded-xl border border-white/20 px-4 py-3"
-      >
-        יציאה
-      </button>
-    </aside>
-
-    {/* MAIN */}
-    <div className="flex-1 p-8">
-
-      {/* TOP BAR */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">ניהול לידים</h1>
-
-        <button
-          onClick={fetchLeads}
-          className="bg-blue-500 px-5 py-2 rounded-xl font-bold"
-        >
-          רענן
-        </button>
-      </div>
-
-      {/* STATS */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-
-        <div className="rounded-2xl p-6 bg-gradient-to-br from-orange-500 to-orange-700">
-          <p className="text-sm opacity-80">סה״כ לידים</p>
-          <p className="text-3xl font-bold">{leads.length}</p>
-        </div>
-
-        <div className="rounded-2xl p-6 bg-gradient-to-br from-blue-500 to-blue-700">
-          <p className="text-sm opacity-80">תוצאות חיפוש</p>
-          <p className="text-3xl font-bold">{filteredLeads.length}</p>
-        </div>
-
-        <div className="rounded-2xl p-6 bg-gradient-to-br from-green-500 to-green-700">
-          <p className="text-sm opacity-80">חדשים היום</p>
-          <p className="text-3xl font-bold">
-            {
-              leads.filter(l =>
-                new Date(l.created_at).toDateString() === new Date().toDateString()
-              ).length
-            }
-          </p>
-        </div>
-
-      </div>
-
-      {/* SEARCH */}
       <input
-        placeholder="🔍 חפש לידים..."
-        value={search}
+        placeholder="חיפוש..."
+        className="mb-6 w-full p-3 rounded bg-neutral-800"
         onChange={(e) => setSearch(e.target.value)}
-        className="mb-6 w-full rounded-xl bg-black/40 px-5 py-4 text-white border border-white/10 focus:border-orange-500 outline-none"
       />
 
-      {/* LOADING */}
-      {loading && <p className="text-center text-neutral-400">טוען...</p>}
+      <button onClick={fetchLeads} className="mb-6 bg-blue-500 px-4 py-2 rounded">
+        רענן
+      </button>
 
-      {/* ERROR */}
-      {error && <p className="text-red-400">{error}</p>}
+      {loading && <p>טוען...</p>}
+      {error && <p className="text-red-500">{error}</p>}
 
-      {/* TABLE */}
-      {!loading && (
-        <div className="rounded-3xl overflow-hidden border border-white/10 bg-black/30">
-          <table className="w-full text-right">
+      <table className="w-full border border-white/10">
+        <thead className="bg-neutral-800">
+          <tr>
+            <th>שם</th>
+            <th>טלפון</th>
+            <th>סטטוס</th>
+            <th>פעולות</th>
+          </tr>
+        </thead>
 
-            <thead className="bg-white/5 text-sm text-neutral-300">
-              <tr>
-                <th className="p-5">תאריך</th>
-                <th className="p-5">שם</th>
-                <th className="p-5">טלפון</th>
-                <th className="p-5">אימייל</th>
-                <th className="p-5">הודעה</th>
-                <th className="p-5">פעולה</th>
-              </tr>
-            </thead>
+        <tbody>
+          {filteredLeads.map((lead) => (
+            <tr key={lead.id} className="border-t border-white/10">
 
-            <tbody>
-              {filteredLeads.map((lead) => (
-                <tr key={lead.id} className="border-t border-white/10 hover:bg-white/5 transition">
+              <td>{lead.name}</td>
+              <td>{lead.phone}</td>
 
-                  <td className="p-5 text-sm text-neutral-400">
-                    {new Date(lead.created_at).toLocaleDateString("he-IL")}
-                  </td>
+              {/* סטטוס */}
+              <td>
+                <span
+                  className={
+                    lead.status === "new"
+                      ? "text-blue-400"
+                      : lead.status === "in_progress"
+                      ? "text-yellow-400"
+                      : "text-green-400"
+                  }
+                >
+                  {lead.status}
+                </span>
+              </td>
 
-                  <td className="p-5 font-semibold">{lead.name}</td>
+              {/* כפתורים */}
+              <td className="space-x-2">
 
-                  <td className="p-5">{lead.phone}</td>
+                <button
+                  onClick={() => updateStatus(lead.id, "new")}
+                  className="bg-blue-500 px-2 py-1 rounded"
+                >
+                  חדש
+                </button>
 
-                  <td className="p-5">{lead.email}</td>
+                <button
+                  onClick={() => updateStatus(lead.id, "in_progress")}
+                  className="bg-yellow-500 px-2 py-1 rounded"
+                >
+                  בטיפול
+                </button>
 
-                  <td className="p-5 max-w-xs truncate">
-                    {lead.message}
-                  </td>
+                <button
+                  onClick={() => updateStatus(lead.id, "closed")}
+                  className="bg-green-500 px-2 py-1 rounded"
+                >
+                  נסגר
+                </button>
 
-                  <td className="p-5">
-                    <a
-                      href={`https://wa.me/972${lead.phone?.replace(/^0/, "")}`}
-                      target="_blank"
-                      className="bg-green-500 px-4 py-2 rounded-full text-black font-bold hover:bg-green-400"
-                    >
-                      וואטסאפ
-                    </a>
-                  </td>
-
-                </tr>
-              ))}
-            </tbody>
-
-          </table>
-        </div>
-      )}
-
-    </div>
-  </main>
-);
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </main>
+  );
 }
