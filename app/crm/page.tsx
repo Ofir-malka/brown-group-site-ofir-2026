@@ -27,25 +27,31 @@ console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
     );
   }
 
-let leads = null;
-let error = null;
+let leads: Lead[] = [];
+let error: { message: string } | null = null;
 
 try {
   const res = await fetch(`${supabaseUrl}/rest/v1/leads?select=*&order=created_at.desc`, {
+    method: "GET",
     headers: {
-      apikey: supabaseKey!,
+      apikey: supabaseKey,
       Authorization: `Bearer ${supabaseKey}`,
+      "Content-Type": "application/json",
     },
     cache: "no-store",
   });
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch leads");
-  }
+  const text = await res.text();
 
-  leads = await res.json();
-} catch (err: any) {
-  error = err;
+  if (!res.ok) {
+    error = { message: `Status ${res.status}: ${text}` };
+  } else {
+    leads = JSON.parse(text);
+  }
+} catch (err) {
+  error = {
+    message: err instanceof Error ? err.message : "Unknown error",
+  };
 }
 
   return (
