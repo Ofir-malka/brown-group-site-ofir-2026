@@ -1,8 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
-console.log("CRM LOADED");
-export const dynamic = "force-dynamic";
-export const maxDuration = 30;
-export const preferredRegion = "iad1";
+"use client";
+
+import { useEffect, useState } from "react";
 
 type Lead = {
   id: number;
@@ -13,66 +11,64 @@ type Lead = {
   created_at: string;
 };
 
-export default async function CRMPage() {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+export default function CRMPage() {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log("SERVICE ROLE:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "EXISTS" : "MISSING");
 
-  if (!supabaseUrl || !supabaseKey) {
-    return (
-      <main dir="rtl" className="min-h-screen bg-neutral-950 text-white p-8">
-        חסרים משתני סביבה של Supabase
-      </main>
-    );
-  }
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        const res = await fetch(
+          `${supabaseUrl}/rest/v1/leads?select=*&order=created_at.desc`,
+          {
+            headers: {
+              apikey: supabaseKey!,
+              Authorization: `Bearer ${supabaseKey}`,
+            },
+          }
+        );
 
-let leads: Lead[] = [];
-let error: { message: string } | null = null;
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Status ${res.status}: ${text}`);
+        }
 
-try {
-  const res = await fetch(`${supabaseUrl}/rest/v1/leads?select=*&order=created_at.desc`, {
-    method: "GET",
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-      "Content-Type": "application/json",
-    },
-    cache: "no-store",
-  });
+        const data = await res.json();
+        setLeads(data);
+      } catch (err: any) {
+        setError(err.message);
+      }
+    };
 
-  const text = await res.text();
-
-  if (!res.ok) {
-    error = { message: `Status ${res.status}: ${text}` };
-  } else {
-    leads = JSON.parse(text);
-  }
-} catch (err) {
-  error = {
-    message: err instanceof Error ? err.message : "Unknown error",
-  };
-}
+    fetchLeads();
+  }, []);
 
   return (
     <main dir="rtl" className="min-h-screen bg-neutral-950 text-white p-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 flex items-center justify-between">
           <div>
-            <p className="text-sm tracking-[0.3em] text-orange-400">BROWN GROUP CRM</p>
+            <p className="text-sm tracking-[0.3em] text-orange-400">
+              BROWN GROUP CRM
+            </p>
             <h1 className="mt-3 text-4xl font-bold">מערכת ניהול לידים</h1>
-            <p className="mt-2 text-neutral-400">כל הפניות מהאתר במקום אחד.</p>
+            <p className="mt-2 text-neutral-400">
+              כל הפניות מהאתר במקום אחד.
+            </p>
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-center">
-            <div className="text-3xl font-bold">{leads?.length || 0}</div>
+            <div className="text-3xl font-bold">{leads.length}</div>
             <div className="text-sm text-neutral-400">לידים</div>
           </div>
         </div>
 
         {error ? (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-red-300">
-            שגיאה בטעינת הלידים: {error.message}שגיאה בטעינת הלידים
+            שגיאה: {error}
           </div>
         ) : (
           <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] shadow-2xl">
@@ -89,20 +85,20 @@ try {
               </thead>
 
               <tbody>
-                {(leads as Lead[] | null)?.map((lead) => (
-                  <tr key={lead.id} className="border-t border-white/10 hover:bg-white/[0.04]">
+                {leads.map((lead) => (
+                  <tr key={lead.id} className="border-t border-white/10">
                     <td className="p-5 text-sm text-neutral-400">
                       {new Date(lead.created_at).toLocaleDateString("he-IL")}
                     </td>
-                    <td className="p-5 font-semibold">{lead.name || "-"}</td>
-                    <td className="p-5">{lead.phone || "-"}</td>
-                    <td className="p-5 text-neutral-300">{lead.email || "-"}</td>
-                    <td className="p-5 max-w-md text-neutral-300">{lead.message || "-"}</td>
+                    <td className="p-5 font-semibold">{lead.name}</td>
+                    <td className="p-5">{lead.phone}</td>
+                    <td className="p-5">{lead.email}</td>
+                    <td className="p-5">{lead.message}</td>
                     <td className="p-5">
                       <a
-                        href={`https://wa.me/972${lead.phone?.replace(/^0/, "")}`}
+                        href={`https://wa.me/972${lead.phone.replace(/^0/, "")}`}
                         target="_blank"
-                        className="rounded-full bg-green-500 px-4 py-2 text-sm font-bold text-black"
+                        className="bg-green-500 px-4 py-2 rounded-full text-black font-bold"
                       >
                         וואטסאפ
                       </a>
@@ -110,10 +106,10 @@ try {
                   </tr>
                 ))}
 
-                {!leads?.length && (
+                {!leads.length && (
                   <tr>
                     <td colSpan={6} className="p-10 text-center text-neutral-400">
-                      אין לידים עדיין.
+                      אין לידים עדיין
                     </td>
                   </tr>
                 )}
