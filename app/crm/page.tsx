@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-
+console.log("CRM LOADED");
 export const dynamic = "force-dynamic";
 
 
