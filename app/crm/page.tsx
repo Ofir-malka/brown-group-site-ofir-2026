@@ -133,18 +133,20 @@ export default function CRMPage() {
     );
   }
 
-  return (
-    <main dir="rtl" className="min-h-screen bg-neutral-950 text-white p-8">
-      <div className="mx-auto max-w-7xl">
+return (
+  <main dir="rtl" className="min-h-screen bg-neutral-950 text-white p-8">
+    <div className="mx-auto max-w-7xl">
 
-        {/* HEADER */}
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold">ניהול לידים</h1>
+      {/* HEADER */}
+      <div className="mb-10 flex flex-col gap-6">
+
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold">מערכת ניהול לידים</h1>
 
           <div className="flex gap-3">
             <button
               onClick={fetchLeads}
-              className="bg-blue-500 px-4 py-2 rounded-xl"
+              className="rounded-xl bg-blue-500 px-5 py-2 font-bold"
             >
               רענן
             </button>
@@ -154,52 +156,110 @@ export default function CRMPage() {
                 sessionStorage.removeItem("crm_logged_in");
                 setIsLoggedIn(false);
               }}
-              className="border px-4 py-2 rounded-xl"
+              className="rounded-xl border border-white/20 px-5 py-2"
             >
               יציאה
             </button>
           </div>
         </div>
 
-        {/* SEARCH */}
-        <input
-          placeholder="חפש לפי שם / טלפון / אימייל..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="mb-6 w-full rounded-xl bg-black/40 px-5 py-3"
-        />
+        {/* STATS */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="rounded-2xl bg-white/5 p-6 text-center">
+            <p className="text-sm text-neutral-400">סה״כ לידים</p>
+            <p className="text-3xl font-bold">{leads.length}</p>
+          </div>
 
-        {/* LOADING */}
-        {loading && <p className="text-center">טוען לידים...</p>}
+          <div className="rounded-2xl bg-white/5 p-6 text-center">
+            <p className="text-sm text-neutral-400">תוצאות חיפוש</p>
+            <p className="text-3xl font-bold">{filteredLeads.length}</p>
+          </div>
 
-        {/* ERROR */}
-        {error && <p className="text-red-400">{error}</p>}
+          <div className="rounded-2xl bg-white/5 p-6 text-center">
+            <p className="text-sm text-neutral-400">חדשים היום</p>
+            <p className="text-3xl font-bold">
+              {
+                leads.filter(l =>
+                  new Date(l.created_at).toDateString() === new Date().toDateString()
+                ).length
+              }
+            </p>
+          </div>
+        </div>
+      </div>
 
-        {/* TABLE */}
-        {!loading && (
+      {/* SEARCH */}
+      <input
+        placeholder="חפש לפי שם / טלפון / אימייל..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="mb-6 w-full rounded-xl bg-black/40 px-5 py-4 text-white"
+      />
+
+      {/* LOADING */}
+      {loading && <p className="text-center text-neutral-400">טוען לידים...</p>}
+
+      {/* ERROR */}
+      {error && <p className="text-red-400">{error}</p>}
+
+      {/* TABLE */}
+      {!loading && (
+        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] shadow-2xl">
           <table className="w-full text-right">
-            <thead>
+            <thead className="bg-white/5 text-sm text-neutral-300">
               <tr>
-                <th>שם</th>
-                <th>טלפון</th>
-                <th>אימייל</th>
-                <th>הודעה</th>
+                <th className="p-5">תאריך</th>
+                <th className="p-5">שם</th>
+                <th className="p-5">טלפון</th>
+                <th className="p-5">אימייל</th>
+                <th className="p-5">הודעה</th>
+                <th className="p-5">פעולה</th>
               </tr>
             </thead>
 
             <tbody>
               {filteredLeads.map((lead) => (
-                <tr key={lead.id}>
-                  <td>{lead.name}</td>
-                  <td>{lead.phone}</td>
-                  <td>{lead.email}</td>
-                  <td>{lead.message}</td>
+                <tr key={lead.id} className="border-t border-white/10 hover:bg-white/[0.04]">
+                  
+                  <td className="p-5 text-sm text-neutral-400">
+                    {new Date(lead.created_at).toLocaleDateString("he-IL")}
+                  </td>
+
+                  <td className="p-5 font-semibold">{lead.name || "-"}</td>
+
+                  <td className="p-5">{lead.phone || "-"}</td>
+
+                  <td className="p-5 text-neutral-300">{lead.email || "-"}</td>
+
+                  <td className="p-5 max-w-md text-neutral-300">
+                    {lead.message || "-"}
+                  </td>
+
+                  <td className="p-5">
+                    <a
+                      href={`https://wa.me/972${lead.phone?.replace(/^0/, "")}`}
+                      target="_blank"
+                      className="rounded-full bg-green-500 px-4 py-2 text-sm font-bold text-black"
+                    >
+                      וואטסאפ
+                    </a>
+                  </td>
+
                 </tr>
               ))}
+
+              {!filteredLeads.length && (
+                <tr>
+                  <td colSpan={6} className="p-10 text-center text-neutral-400">
+                    אין תוצאות
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
-        )}
-      </div>
-    </main>
-  );
+        </div>
+      )}
+    </div>
+  </main>
+);
 }
