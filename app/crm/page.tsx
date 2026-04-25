@@ -159,7 +159,26 @@ useEffect(() => {
         className="mb-6 w-full p-4 rounded-xl bg-black/40 border border-white/10"
         onChange={(e)=>setSearch(e.target.value)}
       />
-
+<div className="mb-6 flex flex-wrap gap-3">
+  {[
+    { key: "all", label: "הכל" },
+    { key: "new", label: "חדש" },
+    { key: "in_progress", label: "בטיפול" },
+    { key: "closed", label: "נסגר" },
+  ].map((item) => (
+    <button
+      key={item.key}
+      onClick={() => setStatusFilter(item.key)}
+      className={`rounded-full px-5 py-2 text-sm font-bold transition ${
+        statusFilter === item.key
+          ? "bg-orange-500 text-black"
+          : "bg-white/10 text-white hover:bg-white/20"
+      }`}
+    >
+      {item.label}
+    </button>
+  ))}
+</div>
       {/* TABLE */}
       <div className="rounded-3xl overflow-hidden border border-white/10 bg-black/30">
 
