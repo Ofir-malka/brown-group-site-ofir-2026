@@ -17,6 +17,7 @@ const CRM_PASS = "Brown0511!";
 
 export default function CRMPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 const [statusFilter, setStatusFilter] = useState("all");
@@ -195,7 +196,11 @@ useEffect(() => {
 
           <tbody>
             {filteredLeads.map((lead) => (
-              <tr key={lead.id} className="border-t border-white/10 hover:bg-white/5">
+              <tr
+  key={lead.id}
+  onClick={() => setSelectedLead(lead)}
+  className="border-t border-white/10 hover:bg-white/5 cursor-pointer"
+>
 
                 <td className="p-5 font-semibold">{lead.name}</td>
                 <td className="p-5">{lead.phone}</td>
@@ -237,7 +242,69 @@ useEffect(() => {
 
         </table>
       </div>
+{selectedLead && (
+  <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50">
+    
+    <div className="bg-neutral-900 p-8 rounded-3xl w-full max-w-lg border border-white/10">
 
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">פרטי ליד</h2>
+        <button onClick={() => setSelectedLead(null)} className="text-white/50 hover:text-white">
+          ✕
+        </button>
+      </div>
+
+      <div className="space-y-3 text-white/80">
+
+        <p><strong>שם:</strong> {selectedLead.name}</p>
+        <p><strong>טלפון:</strong> {selectedLead.phone}</p>
+        <p><strong>אימייל:</strong> {selectedLead.email}</p>
+        <p><strong>הודעה:</strong> {selectedLead.message}</p>
+
+        <p>
+          <strong>תאריך:</strong>{" "}
+          {new Date(selectedLead.created_at).toLocaleDateString("he-IL")}
+        </p>
+
+      </div>
+
+      {/* ACTIONS */}
+      <div className="flex gap-2 mt-6">
+
+        <button
+          onClick={() => updateStatus(selectedLead.id, "new")}
+          className="px-3 py-2 rounded-full bg-blue-500 text-black text-xs"
+        >
+          חדש
+        </button>
+
+        <button
+          onClick={() => updateStatus(selectedLead.id, "in_progress")}
+          className="px-3 py-2 rounded-full bg-yellow-500 text-black text-xs"
+        >
+          בטיפול
+        </button>
+
+        <button
+          onClick={() => updateStatus(selectedLead.id, "closed")}
+          className="px-3 py-2 rounded-full bg-green-500 text-black text-xs"
+        >
+          נסגר
+        </button>
+
+        <a
+          href={`https://wa.me/972${selectedLead.phone.replace(/^0/, "")}`}
+          target="_blank"
+          className="px-3 py-2 rounded-full bg-green-600 text-black text-xs"
+        >
+          WhatsApp
+        </a>
+
+      </div>
+
+    </div>
+  </div>
+)}
     </main>
   );
 }
