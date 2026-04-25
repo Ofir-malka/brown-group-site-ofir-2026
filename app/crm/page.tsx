@@ -21,6 +21,13 @@ export default function CRMPage() {
   useEffect(() => {
     const fetchLeads = async () => {
       try {
+        console.log("CLIENT SUPABASE URL:", supabaseUrl);
+console.log("CLIENT HAS ANON KEY:", !!supabaseKey);
+
+if (!supabaseUrl || !supabaseKey) {
+  setError("חסר NEXT_PUBLIC_SUPABASE_URL או NEXT_PUBLIC_SUPABASE_ANON_KEY ב-Vercel");
+  return;
+}
         const res = await fetch(
           `${supabaseUrl}/rest/v1/leads?select=*&order=created_at.desc`,
           {
