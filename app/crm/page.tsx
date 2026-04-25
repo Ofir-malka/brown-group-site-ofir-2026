@@ -19,7 +19,11 @@ export default function CRMPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -31,39 +35,55 @@ export default function CRMPage() {
     }
   }, []);
 
-  useEffect(() => {
-    if (!isLoggedIn) return;
+  const fetchLeads = async () => {
+    try {
+      setLoading(true);
 
-    const fetchLeads = async () => {
-      try {
-        if (!supabaseUrl || !supabaseKey) {
-          setError("חסר חיבור ל-Supabase");
-          return;
-        }
-
-        const res = await fetch(
-          `${supabaseUrl}/rest/v1/leads?select=*&order=created_at.desc`,
-          {
-            headers: {
-              apikey: supabaseKey,
-              Authorization: `Bearer ${supabaseKey}`,
-            },
-          }
-        );
-
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text);
-        }
-
-        setLeads(await res.json());
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "שגיאה לא ידועה");
+      if (!supabaseUrl || !supabaseKey) {
+        setError("חסר חיבור ל-Supabase");
+        return;
       }
-    };
 
-    fetchLeads();
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/leads?select=*&order=created_at.desc`,
+        {
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text);
+      }
+
+      const data = await res.json();
+      setLeads(data);
+      setFilteredLeads(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "שגיאה לא ידועה");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchLeads();
+    }
   }, [isLoggedIn]);
+
+  useEffect(() => {
+    const filtered = leads.filter((lead) =>
+      `${lead.name} ${lead.phone} ${lead.email} ${lead.message}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    );
+
+    setFilteredLeads(filtered);
+  }, [search, leads]);
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -84,20 +104,14 @@ export default function CRMPage() {
           onSubmit={handleLogin}
           className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[0.04] p-8 shadow-2xl"
         >
-          <p className="text-sm tracking-[0.3em] text-orange-400 text-center">
-            BROWN GROUP CRM
-          </p>
-          <h1 className="mt-4 text-3xl font-bold text-center">כניסה למערכת</h1>
-          <p className="mt-2 text-center text-neutral-400">
-            הזן פרטי התחברות לניהול הלידים
-          </p>
+          <h1 className="text-3xl font-bold text-center">כניסה למערכת</h1>
 
           <div className="mt-8 space-y-4">
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="שם משתמש"
-              className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-white outline-none focus:border-orange-400"
+              className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4"
             />
 
             <input
@@ -105,20 +119,13 @@ export default function CRMPage() {
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               placeholder="סיסמה"
-              className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-white outline-none focus:border-orange-400"
+              className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4"
             />
           </div>
 
-          {loginError && (
-            <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-center text-red-300">
-              {loginError}
-            </div>
-          )}
+          {loginError && <p className="mt-4 text-red-400">{loginError}</p>}
 
-          <button
-            type="submit"
-            className="mt-6 w-full rounded-2xl bg-orange-500 px-5 py-4 font-bold text-black hover:bg-orange-400"
-          >
+          <button className="mt-6 w-full rounded-2xl bg-orange-500 px-5 py-4 font-bold text-black">
             התחברות
           </button>
         </form>
@@ -129,81 +136,68 @@ export default function CRMPage() {
   return (
     <main dir="rtl" className="min-h-screen bg-neutral-950 text-white p-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-10 flex items-center justify-between">
-          <div>
-            <p className="text-sm tracking-[0.3em] text-orange-400">BROWN GROUP CRM</p>
-            <h1 className="mt-3 text-4xl font-bold">מערכת ניהול לידים</h1>
-            <p className="mt-2 text-neutral-400">כל הפניות מהאתר במקום אחד.</p>
-          </div>
 
-          <div className="flex items-center gap-4">
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-center">
-              <div className="text-3xl font-bold">{leads.length}</div>
-              <div className="text-sm text-neutral-400">לידים</div>
-            </div>
+        {/* HEADER */}
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">ניהול לידים</h1>
+
+          <div className="flex gap-3">
+            <button
+              onClick={fetchLeads}
+              className="bg-blue-500 px-4 py-2 rounded-xl"
+            >
+              רענן
+            </button>
 
             <button
               onClick={() => {
                 sessionStorage.removeItem("crm_logged_in");
                 setIsLoggedIn(false);
               }}
-              className="rounded-full border border-white/10 px-5 py-3 text-sm text-neutral-300 hover:bg-white/10"
+              className="border px-4 py-2 rounded-xl"
             >
               יציאה
             </button>
           </div>
         </div>
 
-        {error ? (
-          <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-red-300">
-            שגיאה: {error}
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] shadow-2xl">
-            <table className="w-full text-right">
-              <thead className="bg-white/5 text-sm text-neutral-300">
-                <tr>
-                  <th className="p-5">תאריך</th>
-                  <th className="p-5">שם</th>
-                  <th className="p-5">טלפון</th>
-                  <th className="p-5">אימייל</th>
-                  <th className="p-5">הודעה</th>
-                  <th className="p-5">פעולה</th>
+        {/* SEARCH */}
+        <input
+          placeholder="חפש לפי שם / טלפון / אימייל..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="mb-6 w-full rounded-xl bg-black/40 px-5 py-3"
+        />
+
+        {/* LOADING */}
+        {loading && <p className="text-center">טוען לידים...</p>}
+
+        {/* ERROR */}
+        {error && <p className="text-red-400">{error}</p>}
+
+        {/* TABLE */}
+        {!loading && (
+          <table className="w-full text-right">
+            <thead>
+              <tr>
+                <th>שם</th>
+                <th>טלפון</th>
+                <th>אימייל</th>
+                <th>הודעה</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredLeads.map((lead) => (
+                <tr key={lead.id}>
+                  <td>{lead.name}</td>
+                  <td>{lead.phone}</td>
+                  <td>{lead.email}</td>
+                  <td>{lead.message}</td>
                 </tr>
-              </thead>
-
-              <tbody>
-                {leads.map((lead) => (
-                  <tr key={lead.id} className="border-t border-white/10 hover:bg-white/[0.04]">
-                    <td className="p-5 text-sm text-neutral-400">
-                      {new Date(lead.created_at).toLocaleDateString("he-IL")}
-                    </td>
-                    <td className="p-5 font-semibold">{lead.name || "-"}</td>
-                    <td className="p-5">{lead.phone || "-"}</td>
-                    <td className="p-5 text-neutral-300">{lead.email || "-"}</td>
-                    <td className="p-5 max-w-md text-neutral-300">{lead.message || "-"}</td>
-                    <td className="p-5">
-                      <a
-                        href={`https://wa.me/972${lead.phone?.replace(/^0/, "")}`}
-                        target="_blank"
-                        className="rounded-full bg-green-500 px-4 py-2 text-sm font-bold text-black"
-                      >
-                        וואטסאפ
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-
-                {!leads.length && (
-                  <tr>
-                    <td colSpan={6} className="p-10 text-center text-neutral-400">
-                      אין לידים עדיין
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </main>
