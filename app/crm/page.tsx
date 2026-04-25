@@ -19,7 +19,7 @@ export default function CRMPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
+const [statusFilter, setStatusFilter] = useState("all");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [search, setSearch] = useState("");
@@ -69,15 +69,21 @@ export default function CRMPage() {
     if (isLoggedIn) fetchLeads();
   }, [isLoggedIn]);
 
-  useEffect(() => {
-    setFilteredLeads(
-      leads.filter((l) =>
+useEffect(() => {
+  setFilteredLeads(
+    leads.filter((l) => {
+      const matchesSearch =
         `${l.name} ${l.phone} ${l.email}`
           .toLowerCase()
-          .includes(search.toLowerCase())
-      )
-    );
-  }, [search, leads]);
+          .includes(search.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all" || l.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    })
+  );
+}, [search, leads, statusFilter]);
 
   function handleLogin(e: any) {
     e.preventDefault();
@@ -112,7 +118,12 @@ export default function CRMPage() {
 
       {/* HEADER */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">CRM לידים</h1>
+        <div>
+  <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+    BROWN GROUP
+  </h1>
+  <p className="text-white/50 text-sm mt-1">Lead Management System</p>
+</div>
         <button onClick={fetchLeads} className="bg-blue-500 px-5 py-2 rounded-xl">
           רענן
         </button>
