@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from "react";
 
+import {
+  LineChart,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
+
 type Lead = {
   id: number;
   name: string;
@@ -150,6 +157,12 @@ export default function CRMPage() {
   const progressCount = leads.filter((lead) => lead.status === "in_progress").length;
   const closedCount = leads.filter((lead) => lead.status === "closed").length;
 
+  const chartData = [
+  { name: "חדש", value: newCount },
+  { name: "בטיפול", value: progressCount },
+  { name: "נסגר", value: closedCount },
+];
+
   if (!isLoggedIn) {
     return (
       <main className="min-h-screen bg-[radial-gradient(circle_at_top,#2a1608,transparent_35%),#050505] flex items-center justify-center px-4 text-white">
@@ -217,6 +230,24 @@ export default function CRMPage() {
           <StatCard title="בטיפול" value={progressCount} color="yellow" />
           <StatCard title="נסגרו" value={closedCount} color="green" />
         </div>
+          <div className="mb-10 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl backdrop-blur-xl">
+  <p className="mb-4 text-sm text-white/40">התפלגות לידים</p>
+
+  <div className="h-40 w-full">
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={chartData}>
+        <Tooltip />
+        <Line
+          type="monotone"
+          dataKey="value"
+          stroke="#f97316"
+          strokeWidth={3}
+          dot={{ r: 5 }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
+</div>
 
         <div className="mb-6 rounded-[2rem] border border-white/10 bg-white/[0.04] p-4 shadow-2xl backdrop-blur-xl">
           <input
