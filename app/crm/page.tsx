@@ -264,18 +264,26 @@ const handleDragEnd = async (event: any) => {
 
   <div className="h-40 w-full">
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={chartData}>
-      <Tooltip
+<LineChart data={chartData}>
+  <Tooltip
     contentStyle={{
-    backgroundColor: "#0a0a0a",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: "14px",
-    color: "#fff",
-     }}
-     labelStyle={{ color: "#f97316" }}
-      itemStyle={{ color: "#fff" }}
-       />
-      </LineChart>
+      backgroundColor: "#0a0a0a",
+      border: "1px solid rgba(255,255,255,0.12)",
+      borderRadius: "14px",
+      color: "#fff",
+    }}
+    labelStyle={{ color: "#f97316" }}
+    itemStyle={{ color: "#fff" }}
+  />
+
+  <Line
+    type="monotone"
+    dataKey="value"
+    stroke="#f97316"
+    strokeWidth={3}
+    dot={{ r: 5 }}
+  />
+</LineChart>
     </ResponsiveContainer>
   </div>
 </div>
