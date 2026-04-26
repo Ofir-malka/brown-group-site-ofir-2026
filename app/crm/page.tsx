@@ -262,13 +262,19 @@ export default function CRMPage() {
               {filteredLeads.map((lead) => (
                 <tr
                   key={lead.id}
-                  onClick={() => setSelectedLead(lead)}
-                  className="group cursor-pointer border-t border-white/10 text-white transition-all duration-300 hover:bg-white/[0.07]"
-                >
+                  onClick={() => {
+                   setSelectedLead(null);
+                  setTimeout(() => setSelectedLead(lead), 50);
+                  }}
+                  className={`group cursor-pointer border-t border-white/10 text-white transition-all duration-300
+                  ${selectedLead?.id === lead.id ? "bg-orange-500/10 shadow-inner shadow-orange-500/10" : ""}
+                  hover:bg-white/[0.07] hover:shadow-lg hover:shadow-orange-500/10`}
+                   
+                   >
                   <td className="p-5">
                     <div className="font-black text-white transition duration-300 group-hover:text-orange-400">
-  {lead.name}
-</div>
+                     {lead.name}
+                    </div>
                     <div className="mt-1 text-xs text-white/40">{lead.email}</div>
                   </td>
 
