@@ -10,20 +10,29 @@ type Lead = {
   message: string;
   created_at: string;
   status: string;
+  notes?: string;
 };
 
 const CRM_USER = "Gefen Brown";
 const CRM_PASS = "Brown0511!";
+
+const statusLabels: Record<string, string> = {
+  all: "הכל",
+  new: "חדש",
+  in_progress: "בטיפול",
+  closed: "נסגר",
+};
 
 export default function CRMPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [search, setSearch] = useState("");
+  const [notes, setNotes] = useState("");
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -33,6 +42,12 @@ const [statusFilter, setStatusFilter] = useState("all");
       setIsLoggedIn(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (selectedLead) {
+      setNotes(selectedLead.notes || "");
+    }
+  }, [selectedLead]);
 
   const fetchLeads = async () => {
     const res = await fetch(
@@ -45,7 +60,16 @@ const [statusFilter, setStatusFilter] = useState("all");
       }
     );
 
-    const data = await res.json();
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : [];
+
+    if (!Array.isArray(data)) {
+      console.log("Supabase response:", data);
+      setLeads([]);
+      setFilteredLeads([]);
+      return;
+    }
+
     setLeads(data);
     setFilteredLeads(data);
   };
@@ -62,51 +86,94 @@ const [statusFilter, setStatusFilter] = useState("all");
     });
 
     setLeads((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, status } : l))
+      prev.map((lead) => (lead.id === id ? { ...lead, status } : lead))
     );
+
+    if (selectedLead?.id === id) {
+      setSelectedLead({ ...selectedLead, status });
+    }
+  };
+
+  const updateNotes = async () => {
+    if (!selectedLead) return;
+
+    await fetch(`${supabaseUrl}/rest/v1/leads?id=eq.${selectedLead.id}`, {
+      method: "PATCH",
+      headers: {
+        apikey: supabaseKey!,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ notes }),
+    });
+
+    setLeads((prev) =>
+      prev.map((lead) =>
+        lead.id === selectedLead.id ? { ...lead, notes } : lead
+      )
+    );
+
+    setSelectedLead({ ...selectedLead, notes });
   };
 
   useEffect(() => {
     if (isLoggedIn) fetchLeads();
   }, [isLoggedIn]);
 
-useEffect(() => {
-  setFilteredLeads(
-    leads.filter((l) => {
-      const matchesSearch =
-        `${l.name} ${l.phone} ${l.email}`
+  useEffect(() => {
+    setFilteredLeads(
+      leads.filter((lead) => {
+        const matchesSearch = `${lead.name} ${lead.phone} ${lead.email} ${lead.message}`
           .toLowerCase()
           .includes(search.toLowerCase());
 
-      const matchesStatus =
-        statusFilter === "all" || l.status === statusFilter;
+        const matchesStatus =
+          statusFilter === "all" || lead.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
-    })
-  );
-}, [search, leads, statusFilter]);
+        return matchesSearch && matchesStatus;
+      })
+    );
+  }, [search, leads, statusFilter]);
 
-  function handleLogin(e: any) {
+  function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+
     if (username === CRM_USER && password === CRM_PASS) {
       sessionStorage.setItem("crm_logged_in", "true");
       setIsLoggedIn(true);
     }
   }
 
+  const newCount = leads.filter((lead) => lead.status === "new").length;
+  const progressCount = leads.filter((lead) => lead.status === "in_progress").length;
+  const closedCount = leads.filter((lead) => lead.status === "closed").length;
+
   if (!isLoggedIn) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-neutral-950">
-        <form onSubmit={handleLogin} className="bg-white/5 backdrop-blur p-8 rounded-3xl w-96">
-          <h1 className="text-white text-3xl mb-6 text-center">כניסה</h1>
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,#2a1608,transparent_35%),#050505] flex items-center justify-center px-4 text-white">
+        <form
+          onSubmit={handleLogin}
+          className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white/[0.06] p-8 shadow-2xl backdrop-blur-xl transition duration-500 hover:border-orange-500/40"
+        >
+          <p className="mb-2 text-center text-xs tracking-[0.45em] text-orange-400">
+            BROWN GROUP
+          </p>
+          <h1 className="mb-8 text-center text-3xl font-black">כניסה למערכת</h1>
 
-          <input placeholder="שם משתמש" onChange={(e)=>setUsername(e.target.value)}
-            className="w-full mb-3 p-3 rounded-xl bg-black/40 text-white" />
+          <input
+            placeholder="שם משתמש"
+            onChange={(e) => setUsername(e.target.value)}
+            className="mb-3 w-full rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
+          />
 
-          <input placeholder="סיסמה" type="password" onChange={(e)=>setPassword(e.target.value)}
-            className="w-full mb-3 p-3 rounded-xl bg-black/40 text-white" />
+          <input
+            placeholder="סיסמה"
+            type="password"
+            onChange={(e) => setPassword(e.target.value)}
+            className="mb-5 w-full rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
+          />
 
-          <button className="w-full bg-orange-500 p-3 rounded-xl font-bold">
+          <button className="w-full rounded-2xl bg-orange-500 p-4 font-black text-black shadow-lg shadow-orange-500/20 transition duration-300 hover:-translate-y-1 hover:bg-orange-400 active:scale-95">
             התחבר
           </button>
         </form>
@@ -115,217 +182,330 @@ useEffect(() => {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-white p-8">
+    <main dir="rtl" className="min-h-screen overflow-hidden bg-[#050505] text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(249,115,22,0.22),transparent_30%),radial-gradient(circle_at_15%_20%,rgba(59,130,246,0.18),transparent_25%),radial-gradient(circle_at_50%_90%,rgba(34,197,94,0.10),transparent_30%)]" />
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-  <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-    BROWN GROUP
-  </h1>
-  <p className="text-white/50 text-sm mt-1">Lead Management System</p>
-</div>
-        <button onClick={fetchLeads} className="bg-blue-500 px-5 py-2 rounded-xl">
-          רענן
-        </button>
-      </div>
+      <div className="relative mx-auto max-w-7xl px-6 py-8">
+        <div className="mb-10 flex items-center justify-between">
+          <div>
+            <p className="text-xs tracking-[0.45em] text-orange-400">
+              BROWN GROUP
+            </p>
+            <h1 className="mt-3 bg-gradient-to-l from-orange-300 via-orange-500 to-red-600 bg-clip-text text-5xl font-black text-transparent">
+              Lead Control Center
+            </h1>
+            <p className="mt-2 text-sm text-white/45">
+              מערכת ניהול לידים, סטטוסים, הערות ופעולות במקום אחד
+            </p>
+          </div>
 
-      {/* STATS */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-
-        <div className="p-6 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-700">
-          <p>סה"כ לידים</p>
-          <h2 className="text-3xl font-bold">{leads.length}</h2>
+          <button
+            onClick={fetchLeads}
+            className="rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-bold backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-orange-500/60 hover:bg-orange-500 hover:text-black active:scale-95"
+          >
+            רענן נתונים
+          </button>
         </div>
 
-        <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700">
-          <p>בטיפול</p>
-          <h2 className="text-3xl font-bold">
-            {leads.filter(l=>l.status==="in_progress").length}
-          </h2>
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
+          <StatCard title="סה״כ לידים" value={leads.length} color="orange" />
+          <StatCard title="חדשים" value={newCount} color="blue" />
+          <StatCard title="בטיפול" value={progressCount} color="yellow" />
+          <StatCard title="נסגרו" value={closedCount} color="green" />
         </div>
 
-        <div className="p-6 rounded-2xl bg-gradient-to-br from-green-500 to-green-700">
-          <p>נסגרו</p>
-          <h2 className="text-3xl font-bold">
-            {leads.filter(l=>l.status==="closed").length}
-          </h2>
-        </div>
+        <div className="mb-6 rounded-[2rem] border border-white/10 bg-white/[0.04] p-4 shadow-2xl backdrop-blur-xl">
+          <input
+            placeholder="חיפוש לפי שם, טלפון, אימייל או הודעה..."
+            className="mb-4 w-full rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
+            onChange={(e) => setSearch(e.target.value)}
+          />
 
-      </div>
-
-      {/* SEARCH */}
-      <input
-        placeholder="🔍 חיפוש..."
-        className="mb-6 w-full p-4 rounded-xl bg-black/40 border border-white/10"
-        onChange={(e)=>setSearch(e.target.value)}
-      />
-<div className="mb-6 flex flex-wrap gap-3">
-  {[
-    { key: "all", label: "הכל" },
-    { key: "new", label: "חדש" },
-    { key: "in_progress", label: "בטיפול" },
-    { key: "closed", label: "נסגר" },
-  ].map((item) => (
-    <button
-      key={item.key}
-      onClick={() => setStatusFilter(item.key)}
-      className={`rounded-full px-5 py-2 text-sm font-bold transition ${
-        statusFilter === item.key
-          ? "bg-orange-500 text-black"
-          : "bg-white/10 text-white hover:bg-white/20"
-      }`}
-    >
-      {item.label}
-    </button>
-  ))}
-</div>
-      {/* TABLE */}
-      <div className="rounded-3xl overflow-hidden border border-white/10 bg-black/30">
-
-        <table className="w-full text-right">
-
-          <thead className="bg-white/5">
-            <tr>
-              <th className="p-5">שם</th>
-              <th className="p-5">טלפון</th>
-              <th className="p-5">סטטוס</th>
-              <th className="p-5">פעולות</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredLeads.map((lead) => (
-              <tr
-  key={lead.id}
-  onClick={() => setSelectedLead(lead)}
-  className="border-t border-white/10 hover:bg-white/5 cursor-pointer"
->
-
-                <td className="p-5 font-semibold">{lead.name}</td>
-                <td className="p-5">{lead.phone}</td>
-
-                {/* STATUS */}
-                <td className="p-5">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold
-                    ${lead.status === "new" && "bg-blue-500/20 text-blue-400"}
-                    ${lead.status === "in_progress" && "bg-yellow-500/20 text-yellow-400"}
-                    ${lead.status === "closed" && "bg-green-500/20 text-green-400"}
-                  `}>
-                    {lead.status}
-                  </span>
-                </td>
-
-                {/* ACTIONS */}
-                <td className="p-5 flex gap-2">
-
-                  <button onClick={()=>updateStatus(lead.id,"new")}
-                    className="px-3 py-1 rounded-full bg-blue-500 text-black text-xs">
-                    חדש
-                  </button>
-
-                  <button onClick={()=>updateStatus(lead.id,"in_progress")}
-                    className="px-3 py-1 rounded-full bg-yellow-500 text-black text-xs">
-                    בטיפול
-                  </button>
-
-                  <button onClick={()=>updateStatus(lead.id,"closed")}
-                    className="px-3 py-1 rounded-full bg-green-500 text-black text-xs">
-                    נסגר
-                  </button>
-
-                </td>
-
-              </tr>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { key: "all", label: "הכל" },
+              { key: "new", label: "חדש" },
+              { key: "in_progress", label: "בטיפול" },
+              { key: "closed", label: "נסגר" },
+            ].map((item) => (
+              <button
+                key={item.key}
+                onClick={() => setStatusFilter(item.key)}
+                className={`rounded-full px-5 py-2 text-sm font-black transition duration-300 hover:-translate-y-1 active:scale-95 ${
+                  statusFilter === item.key
+                    ? "bg-orange-500 text-black shadow-lg shadow-orange-500/25"
+                    : "bg-white/10 text-white hover:bg-white/20"
+                }`}
+              >
+                {item.label}
+              </button>
             ))}
-          </tbody>
-
-        </table>
-      </div>
-{selectedLead && (
-  <div className="fixed inset-0 z-50 flex">
-    <div
-      onClick={() => setSelectedLead(null)}
-      className="flex-1 bg-black/60 backdrop-blur-sm"
-    />
-
-    <aside className="w-full max-w-md border-l border-white/10 bg-neutral-950 p-6 shadow-2xl">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <p className="text-xs tracking-[0.3em] text-orange-400">BROWN GROUP</p>
-          <h2 className="mt-2 text-2xl font-bold">פרטי ליד</h2>
+          </div>
         </div>
 
-        <button
-          onClick={() => setSelectedLead(null)}
-          className="rounded-full bg-white/10 px-3 py-1 text-white/70 hover:bg-white/20"
-        >
-          ✕
-        </button>
-      </div>
+        <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-2xl backdrop-blur-xl">
+          <table className="w-full text-right">
+            <thead className="bg-white/[0.06] text-sm text-white/60">
+              <tr>
+                <th className="p-5">שם</th>
+                <th className="p-5">טלפון</th>
+                <th className="p-5">סטטוס</th>
+                <th className="p-5">פעולות</th>
+              </tr>
+            </thead>
 
-      <div className="space-y-5">
-        <div className="rounded-2xl bg-white/5 p-4">
-          <p className="text-sm text-white/40">שם מלא</p>
-          <p className="mt-1 text-xl font-bold">{selectedLead.name || "-"}</p>
+            <tbody>
+              {filteredLeads.map((lead) => (
+                <tr
+                  key={lead.id}
+                  onClick={() => setSelectedLead(lead)}
+                  className="group cursor-pointer border-t border-white/10 transition duration-300 hover:bg-white/[0.07]"
+                >
+                  <td className="p-5">
+                    <div className="font-black">{lead.name}</div>
+                    <div className="mt-1 text-xs text-white/40">{lead.email}</div>
+                  </td>
+
+                  <td className="p-5 text-white/80">{lead.phone}</td>
+
+                  <td className="p-5">
+                    <StatusBadge status={lead.status} />
+                  </td>
+
+                  <td className="p-5">
+                    <div className="flex gap-2">
+                      <ActionButton
+                        label="חדש"
+                        color="blue"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateStatus(lead.id, "new");
+                        }}
+                      />
+                      <ActionButton
+                        label="בטיפול"
+                        color="yellow"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateStatus(lead.id, "in_progress");
+                        }}
+                      />
+                      <ActionButton
+                        label="נסגר"
+                        color="green"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateStatus(lead.id, "closed");
+                        }}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {filteredLeads.length === 0 && (
+            <div className="p-10 text-center text-white/40">
+              לא נמצאו לידים להצגה
+            </div>
+          )}
         </div>
-
-        <div className="rounded-2xl bg-white/5 p-4">
-          <p className="text-sm text-white/40">טלפון</p>
-          <p className="mt-1">{selectedLead.phone || "-"}</p>
-        </div>
-
-        <div className="rounded-2xl bg-white/5 p-4">
-          <p className="text-sm text-white/40">אימייל</p>
-          <p className="mt-1">{selectedLead.email || "-"}</p>
-        </div>
-
-        <div className="rounded-2xl bg-white/5 p-4">
-          <p className="text-sm text-white/40">הודעה</p>
-          <p className="mt-1 leading-relaxed">{selectedLead.message || "-"}</p>
-        </div>
-
-        <div className="rounded-2xl bg-white/5 p-4">
-          <p className="text-sm text-white/40">תאריך</p>
-          <p className="mt-1">
-            {new Date(selectedLead.created_at).toLocaleDateString("he-IL")}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-8 grid grid-cols-3 gap-2">
-        <button
-          onClick={() => updateStatus(selectedLead.id, "new")}
-          className="rounded-xl bg-blue-500 py-3 text-sm font-bold text-black"
-        >
-          חדש
-        </button>
-
-        <button
-          onClick={() => updateStatus(selectedLead.id, "in_progress")}
-          className="rounded-xl bg-yellow-500 py-3 text-sm font-bold text-black"
-        >
-          בטיפול
-        </button>
-
-        <button
-          onClick={() => updateStatus(selectedLead.id, "closed")}
-          className="rounded-xl bg-green-500 py-3 text-sm font-bold text-black"
-        >
-          נסגר
-        </button>
       </div>
 
-      <a
-        href={`https://wa.me/972${selectedLead.phone.replace(/^0/, "")}`}
-        target="_blank"
-        className="mt-4 block rounded-xl bg-green-600 py-3 text-center font-bold text-black hover:bg-green-500"
-      >
-        פתיחה ב־WhatsApp
-      </a>
-    </aside>
-  </div>
-)}
+      {selectedLead && (
+        <div className="fixed inset-0 z-50 flex">
+          <div
+            onClick={() => setSelectedLead(null)}
+            className="flex-1 bg-black/70 backdrop-blur-md"
+          />
+
+          <aside className="h-full w-full max-w-md overflow-y-auto border-r border-white/10 bg-[#070707] p-6 shadow-2xl animate-[slideIn_0.28s_ease-out]">
+            <div className="mb-8 flex items-center justify-between">
+              <div>
+                <p className="text-xs tracking-[0.35em] text-orange-400">
+                  BROWN GROUP
+                </p>
+                <h2 className="mt-2 text-3xl font-black">פרטי ליד</h2>
+              </div>
+
+              <button
+                onClick={() => setSelectedLead(null)}
+                className="rounded-full bg-white/10 px-4 py-2 text-white/70 transition hover:bg-white/20 active:scale-95"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mb-6 rounded-[1.5rem] border border-orange-500/20 bg-orange-500/10 p-5">
+              <p className="text-sm text-orange-300">סטטוס נוכחי</p>
+              <div className="mt-2">
+                <StatusBadge status={selectedLead.status} />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <InfoCard label="שם מלא" value={selectedLead.name} large />
+              <InfoCard label="טלפון" value={selectedLead.phone} />
+              <InfoCard label="אימייל" value={selectedLead.email} />
+              <InfoCard label="הודעה" value={selectedLead.message} />
+              <InfoCard
+                label="תאריך"
+                value={new Date(selectedLead.created_at).toLocaleDateString("he-IL")}
+              />
+
+              <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
+                <p className="mb-2 text-sm text-white/40">הערות פנימיות</p>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full rounded-2xl border border-white/10 bg-black/40 p-3 text-sm outline-none transition focus:border-orange-500"
+                  rows={4}
+                  placeholder="רשום כאן הערות על הלקוח..."
+                />
+
+                <button
+                  onClick={updateNotes}
+                  className="mt-3 w-full rounded-2xl bg-orange-500 py-3 font-black text-black transition duration-300 hover:-translate-y-1 hover:bg-orange-400 active:scale-95"
+                >
+                  שמור הערה
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-8 grid grid-cols-3 gap-2">
+              <ActionButton
+                label="חדש"
+                color="blue"
+                full
+                onClick={() => updateStatus(selectedLead.id, "new")}
+              />
+              <ActionButton
+                label="בטיפול"
+                color="yellow"
+                full
+                onClick={() => updateStatus(selectedLead.id, "in_progress")}
+              />
+              <ActionButton
+                label="נסגר"
+                color="green"
+                full
+                onClick={() => updateStatus(selectedLead.id, "closed")}
+              />
+            </div>
+
+            <a
+              href={`https://wa.me/972${selectedLead.phone.replace(/^0/, "")}`}
+              target="_blank"
+              className="mt-4 block rounded-2xl bg-green-500 py-4 text-center font-black text-black transition duration-300 hover:-translate-y-1 hover:bg-green-400 active:scale-95"
+            >
+              פתיחה ב־WhatsApp
+            </a>
+          </aside>
+        </div>
+      )}
+
+      <style jsx global>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(-100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </main>
+  );
+}
+
+function StatCard({
+  title,
+  value,
+  color,
+}: {
+  title: string;
+  value: number;
+  color: "orange" | "blue" | "yellow" | "green";
+}) {
+  const styles = {
+    orange: "from-orange-500 to-red-700 shadow-orange-500/20",
+    blue: "from-blue-500 to-blue-800 shadow-blue-500/20",
+    yellow: "from-yellow-400 to-orange-600 shadow-yellow-500/20",
+    green: "from-green-400 to-emerald-800 shadow-green-500/20",
+  };
+
+  return (
+    <div
+      className={`rounded-[2rem] bg-gradient-to-br ${styles[color]} p-6 shadow-2xl transition duration-300 hover:-translate-y-2`}
+    >
+      <p className="text-sm font-bold text-white/80">{title}</p>
+      <h2 className="mt-3 text-4xl font-black">{value}</h2>
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const styles =
+    status === "new"
+      ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
+      : status === "in_progress"
+      ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+      : status === "closed"
+      ? "bg-green-500/20 text-green-300 border-green-500/30"
+      : "bg-white/10 text-white/60 border-white/10";
+
+  return (
+    <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-black ${styles}`}>
+      {statusLabels[status] || status}
+    </span>
+  );
+}
+
+function ActionButton({
+  label,
+  color,
+  onClick,
+  full,
+}: {
+  label: string;
+  color: "blue" | "yellow" | "green";
+  onClick: (e: any) => void;
+  full?: boolean;
+}) {
+  const styles = {
+    blue: "bg-blue-500 hover:bg-blue-400",
+    yellow: "bg-yellow-500 hover:bg-yellow-400",
+    green: "bg-green-500 hover:bg-green-400",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`${full ? "w-full" : ""} rounded-full px-4 py-2 text-xs font-black text-black transition duration-300 hover:-translate-y-1 active:scale-95 ${styles[color]}`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function InfoCard({
+  label,
+  value,
+  large,
+}: {
+  label: string;
+  value?: string;
+  large?: boolean;
+}) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-4 transition hover:bg-white/[0.08]">
+      <p className="text-sm text-white/40">{label}</p>
+      <p className={`mt-1 font-bold ${large ? "text-2xl" : "text-base"}`}>
+        {value || "-"}
+      </p>
+    </div>
   );
 }
