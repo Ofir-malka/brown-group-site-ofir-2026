@@ -263,10 +263,12 @@ export default function CRMPage() {
                 <tr
                   key={lead.id}
                   onClick={() => setSelectedLead(lead)}
-                  className="group cursor-pointer border-t border-white/10 transition duration-300 hover:bg-white/[0.07]"
+                  className="group cursor-pointer border-t border-white/10 opacity-0 animate-[fadeInUp_0.4s_ease_forwards] transition-all duration-300 hover:bg-white/[0.07] hover:scale-[1.01]"
                 >
                   <td className="p-5">
-                    <div className="font-black">{lead.name}</div>
+                    <div className="font-black transition duration-300 group-hover:text-orange-400 group-hover:tracking-wide">
+  {lead.name}
+</div>
                     <div className="mt-1 text-xs text-white/40">{lead.email}</div>
                   </td>
 
