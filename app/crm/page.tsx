@@ -243,66 +243,87 @@ useEffect(() => {
         </table>
       </div>
 {selectedLead && (
-  <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50">
-    
-    <div className="bg-neutral-900 p-8 rounded-3xl w-full max-w-lg border border-white/10">
+  <div className="fixed inset-0 z-50 flex">
+    <div
+      onClick={() => setSelectedLead(null)}
+      className="flex-1 bg-black/60 backdrop-blur-sm"
+    />
 
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">פרטי ליד</h2>
-        <button onClick={() => setSelectedLead(null)} className="text-white/50 hover:text-white">
+    <aside className="w-full max-w-md border-l border-white/10 bg-neutral-950 p-6 shadow-2xl">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <p className="text-xs tracking-[0.3em] text-orange-400">BROWN GROUP</p>
+          <h2 className="mt-2 text-2xl font-bold">פרטי ליד</h2>
+        </div>
+
+        <button
+          onClick={() => setSelectedLead(null)}
+          className="rounded-full bg-white/10 px-3 py-1 text-white/70 hover:bg-white/20"
+        >
           ✕
         </button>
       </div>
 
-      <div className="space-y-3 text-white/80">
+      <div className="space-y-5">
+        <div className="rounded-2xl bg-white/5 p-4">
+          <p className="text-sm text-white/40">שם מלא</p>
+          <p className="mt-1 text-xl font-bold">{selectedLead.name || "-"}</p>
+        </div>
 
-        <p><strong>שם:</strong> {selectedLead.name}</p>
-        <p><strong>טלפון:</strong> {selectedLead.phone}</p>
-        <p><strong>אימייל:</strong> {selectedLead.email}</p>
-        <p><strong>הודעה:</strong> {selectedLead.message}</p>
+        <div className="rounded-2xl bg-white/5 p-4">
+          <p className="text-sm text-white/40">טלפון</p>
+          <p className="mt-1">{selectedLead.phone || "-"}</p>
+        </div>
 
-        <p>
-          <strong>תאריך:</strong>{" "}
-          {new Date(selectedLead.created_at).toLocaleDateString("he-IL")}
-        </p>
+        <div className="rounded-2xl bg-white/5 p-4">
+          <p className="text-sm text-white/40">אימייל</p>
+          <p className="mt-1">{selectedLead.email || "-"}</p>
+        </div>
 
+        <div className="rounded-2xl bg-white/5 p-4">
+          <p className="text-sm text-white/40">הודעה</p>
+          <p className="mt-1 leading-relaxed">{selectedLead.message || "-"}</p>
+        </div>
+
+        <div className="rounded-2xl bg-white/5 p-4">
+          <p className="text-sm text-white/40">תאריך</p>
+          <p className="mt-1">
+            {new Date(selectedLead.created_at).toLocaleDateString("he-IL")}
+          </p>
+        </div>
       </div>
 
-      {/* ACTIONS */}
-      <div className="flex gap-2 mt-6">
-
+      <div className="mt-8 grid grid-cols-3 gap-2">
         <button
           onClick={() => updateStatus(selectedLead.id, "new")}
-          className="px-3 py-2 rounded-full bg-blue-500 text-black text-xs"
+          className="rounded-xl bg-blue-500 py-3 text-sm font-bold text-black"
         >
           חדש
         </button>
 
         <button
           onClick={() => updateStatus(selectedLead.id, "in_progress")}
-          className="px-3 py-2 rounded-full bg-yellow-500 text-black text-xs"
+          className="rounded-xl bg-yellow-500 py-3 text-sm font-bold text-black"
         >
           בטיפול
         </button>
 
         <button
           onClick={() => updateStatus(selectedLead.id, "closed")}
-          className="px-3 py-2 rounded-full bg-green-500 text-black text-xs"
+          className="rounded-xl bg-green-500 py-3 text-sm font-bold text-black"
         >
           נסגר
         </button>
-
-        <a
-          href={`https://wa.me/972${selectedLead.phone.replace(/^0/, "")}`}
-          target="_blank"
-          className="px-3 py-2 rounded-full bg-green-600 text-black text-xs"
-        >
-          WhatsApp
-        </a>
-
       </div>
 
-    </div>
+      <a
+        href={`https://wa.me/972${selectedLead.phone.replace(/^0/, "")}`}
+        target="_blank"
+        className="mt-4 block rounded-xl bg-green-600 py-3 text-center font-bold text-black hover:bg-green-500"
+      >
+        פתיחה ב־WhatsApp
+      </a>
+    </aside>
   </div>
 )}
     </main>
