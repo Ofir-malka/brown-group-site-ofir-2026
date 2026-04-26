@@ -18,10 +18,12 @@ const CRM_PASS = "Brown0511!";
 
 const statusLabels: Record<string, string> = {
   all: "הכל",
-  new: "חדש",
+
   in_progress: "בטיפול",
   closed: "נסגר",
 };
+const buttonMotion =
+  "transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.03] active:translate-y-0 active:scale-95";
 
 export default function CRMPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -173,7 +175,9 @@ export default function CRMPage() {
             className="mb-5 w-full rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
           />
 
-          <button className="w-full rounded-2xl bg-orange-500 p-4 font-black text-black shadow-lg shadow-orange-500/20 transition duration-300 hover:-translate-y-1 hover:bg-orange-400 active:scale-95">
+          <button
+  className={`${buttonMotion} w-full rounded-2xl bg-orange-500 p-4 font-black text-black shadow-lg shadow-orange-500/20 hover:bg-orange-400`}
+>
             התחבר
           </button>
         </form>
@@ -201,7 +205,7 @@ export default function CRMPage() {
 
           <button
             onClick={fetchLeads}
-            className="rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-bold backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-orange-500/60 hover:bg-orange-500 hover:text-black active:scale-95"
+            className={`${buttonMotion} rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-bold backdrop-blur hover:border-orange-500/60 hover:bg-orange-500 hover:text-black`}
           >
             רענן נתונים
           </button>
@@ -366,7 +370,7 @@ export default function CRMPage() {
 
                 <button
                   onClick={updateNotes}
-                  className="mt-3 w-full rounded-2xl bg-orange-500 py-3 font-black text-black transition duration-300 hover:-translate-y-1 hover:bg-orange-400 active:scale-95"
+                 className={`${buttonMotion} mt-3 w-full rounded-2xl bg-orange-500 py-3 font-black text-black shadow-lg shadow-orange-500/20 hover:bg-orange-400`}
                 >
                   שמור הערה
                 </button>
@@ -484,7 +488,7 @@ function ActionButton({
   return (
     <button
       onClick={onClick}
-      className={`${full ? "w-full" : ""} rounded-full px-4 py-2 text-xs font-black text-black transition duration-300 hover:-translate-y-1 active:scale-95 ${styles[color]}`}
+      className={`${full ? "w-full" : ""} ${buttonMotion} rounded-full px-4 py-2 text-xs font-black text-black shadow-lg hover:shadow-xl ${styles[color]}`}
     >
       {label}
     </button>
