@@ -18,7 +18,7 @@ const CRM_PASS = "Brown0511!";
 
 const statusLabels: Record<string, string> = {
   all: "הכל",
-
+  new: "חדש",
   in_progress: "בטיפול",
   closed: "נסגר",
 };
@@ -263,10 +263,10 @@ export default function CRMPage() {
                 <tr
                   key={lead.id}
                   onClick={() => setSelectedLead(lead)}
-                  className="group cursor-pointer border-t border-white/10 transition-all duration-300 hover:bg-white/[0.07] hover:scale-[1.01]"
+                  className="group cursor-pointer border-t border-white/10 text-white transition-all duration-300 hover:bg-white/[0.07]"
                 >
                   <td className="p-5">
-                    <div className="font-black transition duration-300 group-hover:text-orange-400 group-hover:tracking-wide">
+                    <div className="font-black text-white transition duration-300 group-hover:text-orange-400">
   {lead.name}
 </div>
                     <div className="mt-1 text-xs text-white/40">{lead.email}</div>
