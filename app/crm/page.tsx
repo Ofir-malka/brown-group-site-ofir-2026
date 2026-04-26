@@ -9,6 +9,23 @@ import {
   Tooltip,
 } from "recharts";
 
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  useDroppable,
+} from "@dnd-kit/core";
+
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+
+import { CSS } from "@dnd-kit/utilities";
+
 type Lead = {
   id: number;
   name: string;
@@ -42,6 +59,7 @@ export default function CRMPage() {
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [search, setSearch] = useState("");
   const [notes, setNotes] = useState("");
+  const sensors = useSensors(useSensor(PointerSensor));
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -102,6 +120,17 @@ export default function CRMPage() {
       setSelectedLead({ ...selectedLead, status });
     }
   };
+
+const handleDragEnd = async (event: any) => {
+  const { active, over } = event;
+
+  if (!over) return;
+
+  const leadId = Number(active.id);
+  const newStatus = String(over.id);
+
+  await updateStatus(leadId, newStatus);
+};
 
   const updateNotes = async () => {
     if (!selectedLead) return;
@@ -236,19 +265,32 @@ export default function CRMPage() {
   <div className="h-40 w-full">
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={chartData}>
-        <Tooltip />
-        <Line
-          type="monotone"
-          dataKey="value"
-          stroke="#f97316"
-          strokeWidth={3}
-          dot={{ r: 5 }}
-        />
+      <Tooltip
+    contentStyle={{
+    backgroundColor: "#0a0a0a",
+    border: "1px solid rgba(255,255,255,0.12)",
+    borderRadius: "14px",
+    color: "#fff",
+     }}
+     labelStyle={{ color: "#f97316" }}
+      itemStyle={{ color: "#fff" }}
+       />
       </LineChart>
     </ResponsiveContainer>
   </div>
 </div>
-
+<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+  <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+  {["new", "in_progress", "closed"].map((status) => (
+    <DroppableColumn
+      key={status}
+      status={status}
+      leads={leads}
+      setSelectedLead={setSelectedLead}
+    />
+  ))}
+</div>
+</DndContext>
         <div className="mb-6 rounded-[2rem] border border-white/10 bg-white/[0.04] p-4 shadow-2xl backdrop-blur-xl">
           <input
             placeholder="חיפוש לפי שם, טלפון, אימייל או הודעה..."
@@ -549,6 +591,75 @@ function InfoCard({
       <p className={`mt-1 font-bold ${large ? "text-2xl" : "text-base"}`}>
         {value || "-"}
       </p>
+    </div>
+  );
+}
+function DroppableColumn({
+  status,
+  leads,
+  setSelectedLead,
+}: {
+  status: string;
+  leads: Lead[];
+  setSelectedLead: (lead: Lead) => void;
+}) {
+  const { setNodeRef } = useDroppable({
+    id: status,
+  });
+
+  const columnLeads = leads.filter((lead) => lead.status === status);
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="rounded-2xl border border-white/10 bg-white/5 p-4 min-h-[300px]"
+    >
+      <h3 className="mb-4 text-lg font-black">{statusLabels[status]}</h3>
+
+      <SortableContext
+        items={columnLeads.map((lead) => lead.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        {columnLeads.map((lead) => (
+          <DraggableLead
+            key={lead.id}
+            lead={lead}
+            setSelectedLead={setSelectedLead}
+          />
+        ))}
+      </SortableContext>
+    </div>
+  );
+}
+
+function DraggableLead({
+  lead,
+  setSelectedLead,
+}: {
+  lead: Lead;
+  setSelectedLead: (lead: Lead) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id: lead.id,
+    });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => setSelectedLead(lead)}
+      className="mb-3 cursor-grab rounded-xl border border-white/10 bg-black/40 p-4 transition hover:border-orange-500/40 hover:bg-white/10 active:cursor-grabbing"
+    >
+      <p className="font-black">{lead.name}</p>
+      <p className="mt-1 text-xs text-white/40">{lead.phone}</p>
     </div>
   );
 }
