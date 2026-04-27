@@ -140,17 +140,18 @@ const uploadImages = async () => {
     fetchProperties();
   };
 
-  const handleDelete = async (id: number) => {
-    await fetch(`${supabaseUrl}/rest/v1/properties?id=eq.${id}`, {
-      method: "DELETE",
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-      },
-    });
+const handleDelete = async (id: number) => {
+  if (!window.confirm("האם אתה בטוח שברצונך למחוק נכס זה?")) return;
+  await fetch(`${supabaseUrl}/rest/v1/properties?id=eq.${id}`, {
+    method: "DELETE",
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+    },
+  });
 
-    fetchProperties();
-  };
+  fetchProperties();
+};
 
   return (
     <main dir="rtl" className="min-h-screen bg-[#050505] text-white">
