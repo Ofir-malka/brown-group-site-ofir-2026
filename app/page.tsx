@@ -214,12 +214,6 @@ const heroRentProperties: FeaturedProperty[] = [
       "דירת פרימיום בפרויקט גינדי עם חללים גדולים, מטבח מעוצב, מרפסת מרשימה ונוף פתוח.",
   },
 ];
-export const metadata = {
-  metadataBase: new URL("https://browngroup.it.com"),
-  alternates: {
-    canonical: "/",
-  },
-};
 export default function RealEstateAIWebsite() {
   const shouldReduceMotion = useReducedMotion();
 
