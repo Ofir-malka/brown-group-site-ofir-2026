@@ -19,9 +19,11 @@ type RentProperty = {
   description: string;
   image?: string;
   images?: string[];
+  features?: string;
+image_note?: string;
 };
 
-const rentProperties: RentProperty[] = [
+const defaultRentProperties: RentProperty[] = [
   {
     id: "malan-penthouse",
     title: "פנטהאוז יוקרה בכרם התימנים",
@@ -199,9 +201,17 @@ const propertyCardNotes: Record<string, string> = {
   "gindi-tlv-rent":
     "דירת פרימיום בפרויקט גינדי עם נוף פתוח, מרחבים גדולים ועיצוב מודרני יוקרתי.",
 };
-
+const parseImageUrls = (value?: string) =>
+  value
+    ? value
+        .split(",")
+        .map((url) => url.trim())
+        .filter((url) => url.startsWith("http"))
+    : [];
 function RentPropertiesContent() {
  const searchParams = useSearchParams(); 
+ const [rentProperties, setRentProperties] =
+  useState<RentProperty[]>(defaultRentProperties);
   const [selectedProperty, setSelectedProperty] = useState<RentProperty | null>(
     null
   );
@@ -211,7 +221,45 @@ function RentPropertiesContent() {
     {}
   );
   const [activePopupImage, setActivePopupImage] = useState(0);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+useEffect(() => {
+  const fetchRentProperties = async () => {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/properties?select=*&deal_type=eq.rent&order=created_at.desc`,
+      {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+        },
+      }
+    );
 
+    const data = await res.json();
+    console.log("rent properties from supabase:", data);
+
+   const mapped = Array.isArray(data)
+  ? data.map((p) => ({
+      id: String(p.id),
+      title: p.title || "",
+      area: [p.city, p.address].filter(Boolean).join(", "),
+      details: p.details || p.description || "",
+      description: p.description || "",
+      features: p.features || "",
+      image_note: p.image_note || "",
+      price: p.price || "",
+      tag: "להשכרה",
+      image: parseImageUrls(p.image_url)[0] || "",
+      images: parseImageUrls(p.image_url),
+    }))
+  : [];
+        
+
+setRentProperties([...mapped, ...defaultRentProperties]);
+};
+
+fetchRentProperties();
+}, []);
   const propertyImagesMap = useMemo(() => {
     return Object.fromEntries(
       rentProperties.map((property) => [
@@ -219,7 +267,7 @@ function RentPropertiesContent() {
         property.images?.filter(Boolean) || [],
       ])
     ) as Record<string, string[]>;
-  }, []);
+  }, [rentProperties]);
 
   useEffect(() => {
     const intervals: ReturnType<typeof setInterval>[] = [];
@@ -503,9 +551,12 @@ useEffect(() => {
             const currentImage = hasImages
               ? safeImages[activeIndex % safeImages.length]
               : null;
-            const note = propertyImageNotes[property.id];
-            const shortNote = propertyCardNotes[property.id];
-            const highlights = propertyHighlights[property.id] || [];
+            const note = property.image_note || propertyImageNotes[property.id];
+            const shortNote = propertyCardNotes[property.id] || property.description;
+            const highlights =
+            propertyHighlights[property.id] ||
+            property.features?.split(",").map((item) => item.trim()).filter(Boolean) ||
+            [];
 
             return (
               <motion.button
@@ -540,7 +591,7 @@ useEffect(() => {
                     <AnimatePresence mode="wait">
                       <motion.img
                         key={currentImage}
-                        src={currentImage || safeImages[0]}
+                        src={currentImage || property.image || safeImages[0]}
                         alt={property.title}
                         className="absolute inset-0 h-full w-full object-cover"
                         initial={{ opacity: 0, scale: 1.08 }}
@@ -834,19 +885,27 @@ useEffect(() => {
                     {selectedProperty.details}
                   </div>
 
-                  {(propertyHighlights[selectedProperty.id] || []).length > 0 && (
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      {propertyHighlights[selectedProperty.id].map((item) => (
-                        <div
-                          key={item}
-                          className="rounded-2xl border border-neutral-200 bg-white p-4 text-sm text-neutral-700"
-                        >
-                          {item}
-                        </div>
-                      ))}
+                  {(
+                 propertyHighlights[selectedProperty.id] ||
+                 selectedProperty.features?.split(",").map((item) => item.trim()).filter(Boolean) ||
+                   []
+                  ).length > 0 && (
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                   {(
+                   propertyHighlights[selectedProperty.id] ||
+                   selectedProperty.features?.split(",").map((item) => item.trim()).filter(Boolean) ||
+                    []
+                  ).map((item) => (
+                    <div
+                    key={item}
+                   className="rounded-2xl border border-neutral-200 bg-white p-4 text-sm text-neutral-700"
+                    >
+                    {item}
+                   </div>
+                   ))}
                     </div>
-                  )}
-
+                   )}
+     
                   <p className="mt-5 text-sm leading-7 text-neutral-700 sm:mt-6 sm:text-base sm:leading-8">
                     {selectedProperty.description}
                   </p>
