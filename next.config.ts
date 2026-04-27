@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
         has: [
           {
             type: "host",
-            value: "browngroup.vercel.app",
+            value: "brown-group-site-ofir-2026.vercel.app",
           },
         ],
         destination: "https://browngroup.it.com/:path*",
