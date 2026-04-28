@@ -48,7 +48,21 @@ const statusLabels: Record<string, string> = {
 };
 const buttonMotion =
   "transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.03] active:translate-y-0 active:scale-95";
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("he-IL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
+const formatDateTime = (iso: string) =>
+  new Date(iso).toLocaleString("he-IL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 export default function CRMPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -59,8 +73,15 @@ export default function CRMPage() {
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [search, setSearch] = useState("");
   const [notes, setNotes] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newLead, setNewLead] = useState({
+  name: "",
+  phone: "",
+  email: "",
+  message: "",
+  });
+  const [isAdding, setIsAdding] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor));
-
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -153,6 +174,58 @@ const handleDragEnd = async (event: any) => {
 
     setSelectedLead({ ...selectedLead, notes });
   };
+const handleAddLead = async () => {
+  if (!newLead.name.trim() || !newLead.phone.trim()) {
+    alert("שם וטלפון הם שדות חובה");
+    return;
+  }
+
+  setIsAdding(true);
+
+  const res = await fetch(`${supabaseUrl}/rest/v1/leads`, {
+    method: "POST",
+    headers: {
+      apikey: supabaseKey!,
+      Authorization: `Bearer ${supabaseKey}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({ ...newLead, status: "new" }),
+  });
+
+  setIsAdding(false);
+
+  if (!res.ok) {
+    alert("שגיאה בהוספת הליד");
+    return;
+  }
+
+  const [created] = await res.json();
+
+  setLeads((prev) => [created, ...prev]);
+  setNewLead({ name: "", phone: "", email: "", message: "" });
+  setShowAddForm(false);
+};
+
+const handleDeleteLead = async (id: number) => {
+  if (!window.confirm("האם אתה בטוח שברצונך למחוק ליד זה?")) return;
+
+  const res = await fetch(`${supabaseUrl}/rest/v1/leads?id=eq.${id}`, {
+    method: "DELETE",
+    headers: {
+      apikey: supabaseKey!,
+      Authorization: `Bearer ${supabaseKey}`,
+    },
+  });
+
+  if (!res.ok) {
+    alert("שגיאה במחיקת הליד");
+    return;
+  }
+
+  setLeads((prev) => prev.filter((lead) => lead.id !== id));
+  setSelectedLead(null);
+};
 
   useEffect(() => {
     if (isLoggedIn) fetchLeads();
@@ -218,8 +291,8 @@ const handleDragEnd = async (event: any) => {
           />
 
           <button
-  className={`${buttonMotion} w-full rounded-2xl bg-orange-500 p-4 font-black text-black shadow-lg shadow-orange-500/20 hover:bg-orange-400`}
->
+          className={`${buttonMotion} w-full rounded-2xl bg-orange-500 p-4 font-black text-black shadow-lg shadow-orange-500/20 hover:bg-orange-400`}
+           >
             התחבר
           </button>
         </form>
@@ -245,14 +318,65 @@ const handleDragEnd = async (event: any) => {
             </p>
           </div>
 
-          <button
-            onClick={fetchLeads}
-            className={`${buttonMotion} rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-bold backdrop-blur hover:border-orange-500/60 hover:bg-orange-500 hover:text-black`}
-          >
-            רענן נתונים
-          </button>
-        </div>
+          <div className="flex gap-3">
+  <button
+    onClick={() => setShowAddForm((prev) => !prev)}
+    className={`${buttonMotion} rounded-2xl bg-orange-500 px-6 py-3 font-bold text-black shadow-lg hover:bg-orange-400`}
+  >
+    {showAddForm ? "ביטול" : "+ הוסף ליד"}
+  </button>
 
+  <button
+    onClick={fetchLeads}
+    className={`${buttonMotion} rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-bold backdrop-blur hover:border-orange-500/60 hover:bg-orange-500 hover:text-black`}
+  >
+    רענן נתונים
+  </button>
+</div>
+</div>
+{showAddForm && (
+  <div className="mb-8 rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-2xl backdrop-blur-xl">
+    <h2 className="mb-5 text-xl font-black">הוספת ליד ידני</h2>
+
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <input
+        placeholder="שם מלא *"
+        value={newLead.name}
+        onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+        className="rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
+      />
+
+      <input
+        placeholder="טלפון *"
+        value={newLead.phone}
+        onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+        className="rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
+      />
+
+      <input
+        placeholder="אימייל"
+        value={newLead.email}
+        onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+        className="rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
+      />
+
+      <input
+        placeholder="הודעה"
+        value={newLead.message}
+        onChange={(e) => setNewLead({ ...newLead, message: e.target.value })}
+        className="rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
+      />
+    </div>
+
+    <button
+      onClick={handleAddLead}
+      disabled={isAdding}
+      className={`${buttonMotion} mt-5 rounded-2xl bg-orange-500 px-8 py-4 font-black text-black shadow-lg shadow-orange-500/20 hover:bg-orange-400 disabled:opacity-50`}
+    >
+      {isAdding ? "שומר..." : "הוסף ליד"}
+    </button>
+  </div>
+)}
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
           <StatCard title="סה״כ לידים" value={leads.length} color="orange" />
           <StatCard title="חדשים" value={newCount} color="blue" />
@@ -262,8 +386,8 @@ const handleDragEnd = async (event: any) => {
           <div className="mb-10 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl backdrop-blur-xl">
   <p className="mb-4 text-sm text-white/40">התפלגות לידים</p>
 
-  <div className="h-40 w-full">
-    <ResponsiveContainer width="100%" height="100%">
+  <div className="min-h-[250px] w-full">
+  <ResponsiveContainer width="100%" height="100%">
 <LineChart data={chartData}>
   <Tooltip
     contentStyle={{
@@ -334,6 +458,7 @@ const handleDragEnd = async (event: any) => {
               <tr>
                 <th className="p-5">שם</th>
                 <th className="p-5">טלפון</th>
+                <th className="p-5">תאריך</th>
                 <th className="p-5">סטטוס</th>
                 <th className="p-5">פעולות</th>
               </tr>
@@ -361,9 +486,13 @@ const handleDragEnd = async (event: any) => {
 
                   <td className="p-5 text-white/80">{lead.phone}</td>
 
-                  <td className="p-5">
+                   <td className="p-5 text-sm text-white/50">
+                   {formatDate(lead.created_at)}
+                   </td>
+
+                   <td className="p-5">
                     <StatusBadge status={lead.status} />
-                  </td>
+                     </td>
 
                   <td className="p-5">
                     <div className="flex gap-2">
@@ -443,8 +572,8 @@ const handleDragEnd = async (event: any) => {
               <InfoCard label="אימייל" value={selectedLead.email} />
               <InfoCard label="הודעה" value={selectedLead.message} />
               <InfoCard
-                label="תאריך"
-                value={new Date(selectedLead.created_at).toLocaleDateString("he-IL")}
+               label="תאריך כניסה"
+               value={formatDateTime(selectedLead.created_at)}
               />
 
               <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
@@ -494,6 +623,12 @@ const handleDragEnd = async (event: any) => {
             >
               פתיחה ב־WhatsApp
             </a>
+            <button
+           onClick={() => handleDeleteLead(selectedLead.id)}
+          className="mt-3 w-full rounded-2xl border border-red-500/30 bg-red-500/10 py-3 font-black text-red-400 transition duration-300 hover:bg-red-500/20 active:scale-95"
+          >
+           מחק ליד   
+           </button>
           </aside>
         </div>
       )}
@@ -667,7 +802,8 @@ function DraggableLead({
       className="mb-3 cursor-grab rounded-xl border border-white/10 bg-black/40 p-4 transition hover:border-orange-500/40 hover:bg-white/10 active:cursor-grabbing"
     >
       <p className="font-black">{lead.name}</p>
-      <p className="mt-1 text-xs text-white/40">{lead.phone}</p>
+    <p className="mt-1 text-xs text-white/40">{lead.phone}</p>
+    <p className="mt-1 text-xs text-white/25">{formatDate(lead.created_at)}</p>
     </div>
   );
 }
