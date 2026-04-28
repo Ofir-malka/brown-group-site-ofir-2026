@@ -641,9 +641,12 @@ const propertyImagesMap = useMemo(() => {
                     פרסום בקרוב
                   </span>
 
-                  <span className="rounded-2xl border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-300 group-hover:border-[#d9873b] group-hover:bg-[#fff8f1] group-hover:text-black">
-                    הישארו מעודכנים
-                  </span>
+                  <a
+                 href="/#contact"
+                  className="rounded-2xl border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 transition-all duration-300 group-hover:border-[#d9873b] group-hover:bg-[#fff8f1] group-hover:text-black"
+                >
+                 הישארו מעודכנים
+                 </a>
                 </div>
               </div>
             </motion.div>
