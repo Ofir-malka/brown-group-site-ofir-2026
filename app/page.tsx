@@ -214,11 +214,7 @@ const heroRentProperties: FeaturedProperty[] = [
       "דירת פרימיום בפרויקט גינדי עם חללים גדולים, מטבח מעוצב, מרפסת מרשימה ונוף פתוח.",
   },
 ];
-export const metadata = {
-  title: "קבוצת בראון גרופ | דירות יוקרה בתל אביב להשכרה ולמכירה",
-  description:
-    "בראון גרופ מתמחה בדירות יוקרה, פנטהאוזים ונכסים להשכרה ולהשקעה בתל אביב. שירות אישי וליווי מלא.",
-};
+
 export default function RealEstateAIWebsite() {
   const shouldReduceMotion = useReducedMotion();
 
