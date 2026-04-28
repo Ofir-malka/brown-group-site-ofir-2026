@@ -23,6 +23,12 @@ type RentProperty = {
 image_note?: string;
 };
 
+export const metadata = {
+  title: "דירות להשכרה בתל אביב | בראון גרופ",
+  description:
+    "מבחר דירות יוקרה להשכרה בתל אביב – פנטהאוזים, דירות מעוצבות ונכסים במיקומים הכי טובים בעיר.",
+};
+
 const defaultRentProperties: RentProperty[] = [
   {
     id: "malan-penthouse",

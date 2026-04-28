@@ -95,6 +95,12 @@ const parseImageUrls = (value?: string) =>
   value
     ? value.split(",").map((url) => url.trim()).filter((url) => url.startsWith("http"))
     : [];
+    
+export const metadata = {
+  title: "דירות למכירה בתל אביב | בראון גרופ",
+  description:
+    "נכסי יוקרה למכירה בתל אביב – דירות, פנטהאוזים והשקעות נדל״ן במיקומים מובילים בעיר.",
+};
 
 export default function SalePropertiesPage() {
   const [selectedProperty, setSelectedProperty] = useState<SaleProperty | null>(

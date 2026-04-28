@@ -29,14 +29,15 @@ const emptyForm = {
   features: "",
   image_note: "",
 };
-
+const ADMIN_PASS = "BrownAdmin2024";
 export default function AdminProperties() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [imageFiles, setImageFiles] = useState<FileList | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-
+const [isLoggedIn, setIsLoggedIn] = useState(false);
+const [passwordInput, setPasswordInput] = useState("");
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
@@ -55,9 +56,15 @@ export default function AdminProperties() {
     setProperties(Array.isArray(data) ? data : []);
   };
 
-  useEffect(() => {
-    fetchProperties();
-  }, []);
+useEffect(() => {
+  if (isLoggedIn) fetchProperties();
+}, [isLoggedIn]);
+
+useEffect(() => {
+  if (sessionStorage.getItem("admin_logged_in") === "true") {
+    setIsLoggedIn(true);
+  }
+}, []);
 
 const resetForm = () => {
   setForm(emptyForm);
