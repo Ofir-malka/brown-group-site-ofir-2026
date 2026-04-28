@@ -137,7 +137,7 @@ useEffect(() => {
       : [];
       
 
-    if (mapped.length > 0) setDisplayProperties(mapped);
+    if (mapped.length > 0) setDisplayProperties([...mapped, ...saleProperties]);
   };
 
   fetchSaleProperties();
