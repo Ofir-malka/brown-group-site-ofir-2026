@@ -690,13 +690,10 @@ if (!res.ok) {
             </div>
 
             <h1 className="max-w-3xl text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-4xl md:text-7xl">
-  בראון גרופ נדל״ן בתל אביב
-  <br />
-  דירות יוקרה להשכרה
-  <br />
-  ולמכירה
+  קבוצת בראון גרופ<br />
+  המתמחה בדירות יוקרה להשכרה ולמכירה<br />
+  בתל אביב
 </h1>
-
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:mt-7 sm:text-lg md:text-xl">
               Brown Group מציגה דירות יוקרה, פנטהאוזים, נכסים להשכרה והזדמנויות
               השקעה נבחרות בתל אביב — עם שירות אישי, נראות ברמה גבוהה וגישה
