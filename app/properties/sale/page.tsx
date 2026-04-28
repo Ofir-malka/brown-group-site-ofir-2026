@@ -17,6 +17,8 @@ type SaleProperty = {
   description: string;
   image?: string;
   images?: string[];
+  features?: string;
+  image_note?: string;
 };
 
 const saleProperties: SaleProperty[] = [
@@ -89,10 +91,57 @@ const propertyCardNotes: Record<string, string> = {
     "פריים לוקיישן בלב תל אביב, פסיעה מדיזנגוף סנטר, עם חניה ומחסן.",
 };
 
+const parseImageUrls = (value?: string) =>
+  value
+    ? value.split(",").map((url) => url.trim()).filter((url) => url.startsWith("http"))
+    : [];
+
 export default function SalePropertiesPage() {
   const [selectedProperty, setSelectedProperty] = useState<SaleProperty | null>(
     null
   );
+
+  const [displayProperties, setDisplayProperties] = useState<SaleProperty[]>(saleProperties);
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+useEffect(() => {
+  const fetchSaleProperties = async () => {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/properties?select=*&deal_type=eq.sale&order=created_at.desc`,
+      {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    const mapped = Array.isArray(data)
+      ? data.map((p) => ({
+          id: String(p.id),
+          title: p.title || "",
+          area: [p.city, p.address].filter(Boolean).join(", "),
+          details: p.details || p.description || "",
+          description: p.description || "",
+          features: p.features || "",
+          image_note: p.image_note || "",
+          price: p.price || "",
+          tag: "למכירה",
+          image: parseImageUrls(p.image_url)[0] || "",
+          images: parseImageUrls(p.image_url),
+        }))
+      : [];
+      
+
+    if (mapped.length > 0) setDisplayProperties(mapped);
+  };
+
+  fetchSaleProperties();
+}, []);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeImages, setActiveImages] = useState<Record<string, number>>({});
   const [pausedSliders, setPausedSliders] = useState<Record<string, boolean>>(
@@ -100,19 +149,19 @@ export default function SalePropertiesPage() {
   );
   const [activePopupImage, setActivePopupImage] = useState(0);
 
-  const propertyImagesMap = useMemo(() => {
-    return Object.fromEntries(
-      saleProperties.map((property) => [
-        property.id,
-        property.images?.filter(Boolean) || [],
-      ])
-    ) as Record<string, string[]>;
-  }, []);
+const propertyImagesMap = useMemo(() => {
+  return Object.fromEntries(
+    displayProperties.map((property) => [
+      property.id,
+      property.images?.filter(Boolean) || [],
+    ])
+  ) as Record<string, string[]>;
+}, [displayProperties]);
 
   useEffect(() => {
     const intervals: ReturnType<typeof setInterval>[] = [];
 
-    saleProperties.forEach((property) => {
+    displayProperties.forEach((property) => {
       const images = propertyImagesMap[property.id] || [];
       if (images.length <= 1 || pausedSliders[property.id]) return;
 
@@ -370,17 +419,19 @@ export default function SalePropertiesPage() {
         </motion.div>
 
         <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-7 md:grid-cols-2 xl:grid-cols-3">
-          {saleProperties.map((property, index) => {
+          {displayProperties.map((property, index) => {
             const safeImages = propertyImagesMap[property.id] || [];
             const hasImages = safeImages.length > 0;
             const activeIndex = activeImages[property.id] || 0;
             const currentImage = hasImages
               ? safeImages[activeIndex % safeImages.length]
               : null;
-            const note = propertyImageNotes[property.id];
-            const shortNote = propertyCardNotes[property.id];
-            const highlights = propertyHighlights[property.id] || [];
-
+            const note = property.image_note || propertyImageNotes[property.id];
+             const shortNote = propertyCardNotes[property.id] || property.description;
+             const highlights =
+              propertyHighlights[property.id] ||
+              property.features?.split(",").map((item) => item.trim()).filter(Boolean) ||
+  [];
             return (
               <motion.button
                 key={property.id}
@@ -685,17 +736,25 @@ export default function SalePropertiesPage() {
                     {selectedProperty.details}
                   </div>
 
-                  {(propertyHighlights[selectedProperty.id] || []).length > 0 && (
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      {propertyHighlights[selectedProperty.id].map((item) => (
-                        <div
-                          key={item}
-                          className="rounded-2xl border border-neutral-200 bg-white p-4 text-sm text-neutral-700"
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
+                  {(
+  propertyHighlights[selectedProperty.id] ||
+  selectedProperty.features?.split(",").map((item) => item.trim()).filter(Boolean) ||
+  []
+).length > 0 && (
+  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+    {(
+      propertyHighlights[selectedProperty.id] ||
+      selectedProperty.features?.split(",").map((item) => item.trim()).filter(Boolean) ||
+      []
+    ).map((item) => (
+      <div
+        key={item}
+              className="rounded-2xl border border-neutral-200 bg-white p-4 text-sm text-neutral-700"
+                    >
+                   {item}
+                  </div>
+                   ))}
+                 </div>
                   )}
 
                   <p className="mt-5 text-sm leading-7 text-neutral-700 sm:mt-6 sm:text-base sm:leading-8">
