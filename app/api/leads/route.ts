@@ -16,14 +16,15 @@ export async function POST(req: Request) {
 
     console.log("BODY:", body); // חשוב לבדיקה
 
-    const { error } = await supabase.from("leads").insert([
-      {
-        name: body.name,
-        phone: body.phone,
-        email: body.email,
-        message: body.message,
-      },
-    ]);
+   const { error } = await supabase.from("leads").insert([
+  {
+    name: body.name,
+    phone: body.phone,
+    email: body.email,
+    message: body.message,
+    source: "website",
+  },
+]);
 
     if (error) {
       console.error("SUPABASE ERROR:", error);

@@ -35,6 +35,7 @@ type Lead = {
   created_at: string;
   status: string;
   notes?: string;
+  source?: string;
 };
 
 const CRM_USER = "Gefen Brown";
@@ -45,6 +46,12 @@ const statusLabels: Record<string, string> = {
   new: "חדש",
   in_progress: "בטיפול",
   closed: "נסגר",
+};
+const sourceLabels: Record<string, string> = {
+  website: "אתר",
+  whatsapp: "וואטסאפ",
+  phone: "טלפון",
+  manual: "ידני",
 };
 const buttonMotion =
   "transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.03] active:translate-y-0 active:scale-95";
@@ -80,7 +87,8 @@ export default function CRMPage() {
   phone: "",
   email: "",
   message: "",
-  });
+  source: "manual",
+});
   const [isAdding, setIsAdding] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor));
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -204,7 +212,7 @@ const handleAddLead = async () => {
   const [created] = await res.json();
 
   setLeads((prev) => [created, ...prev]);
-  setNewLead({ name: "", phone: "", email: "", message: "" });
+  setNewLead({ name: "", phone: "", email: "", message: "", source: "manual" });
   setShowAddForm(false);
 };
 
@@ -398,6 +406,16 @@ const handleDeleteLead = async (id: number) => {
         onChange={(e) => setNewLead({ ...newLead, message: e.target.value })}
         className="rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
       />
+      <select
+  value={newLead.source}
+  onChange={(e) => setNewLead({ ...newLead, source: e.target.value })}
+  className="rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
+>
+  <option value="manual">ידני</option>
+  <option value="phone">טלפון</option>
+  <option value="whatsapp">וואטסאפ</option>
+  <option value="website">אתר</option>
+</select>
     </div>
 
     <button
@@ -510,11 +528,12 @@ const handleDeleteLead = async (id: number) => {
           <table className="w-full text-right">
             <thead className="bg-white/[0.06] text-sm text-white/60">
               <tr>
-                <th className="p-5">שם</th>
-                <th className="p-5">טלפון</th>
-                <th className="p-5">תאריך</th>
-                <th className="p-5">סטטוס</th>
-                <th className="p-5">פעולות</th>
+               <th className="p-5">שם</th>
+               <th className="p-5">טלפון</th>
+               <th className="p-5">תאריך</th>
+               <th className="p-5">מקור</th>
+               <th className="p-5">סטטוס</th>
+               <th className="p-5">פעולות</th>
               </tr>
             </thead>
 
@@ -543,7 +562,9 @@ const handleDeleteLead = async (id: number) => {
                    <td className="p-5 text-sm text-white/50">
                    {formatDate(lead.created_at)}
                    </td>
-
+                     <td className="p-5 text-sm text-white/50">
+                    {lead.source ? sourceLabels[lead.source] ?? lead.source : "—"}
+                    </td>
                    <td className="p-5">
                     <StatusBadge status={lead.status} />
                      </td>
@@ -629,6 +650,10 @@ const handleDeleteLead = async (id: number) => {
                label="תאריך כניסה"
                value={formatDateTime(selectedLead.created_at)}
               />
+              <InfoCard
+               label="מקור"
+               value={selectedLead.source ? sourceLabels[selectedLead.source] ?? selectedLead.source : "—"}
+                />
 
               <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
                 <p className="mb-2 text-sm text-white/40">הערות פנימיות</p>
