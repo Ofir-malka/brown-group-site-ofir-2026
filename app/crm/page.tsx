@@ -69,6 +69,7 @@ export default function CRMPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [timeFilter, setTimeFilter] = useState("all");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [search, setSearch] = useState("");
@@ -231,20 +232,51 @@ const handleDeleteLead = async (id: number) => {
     if (isLoggedIn) fetchLeads();
   }, [isLoggedIn]);
 
-  useEffect(() => {
-    setFilteredLeads(
-      leads.filter((lead) => {
-        const matchesSearch = `${lead.name} ${lead.phone} ${lead.email} ${lead.message}`
-          .toLowerCase()
-          .includes(search.toLowerCase());
+ useEffect(() => {
+  const now = new Date();
 
-        const matchesStatus =
-          statusFilter === "all" || lead.status === statusFilter;
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
 
-        return matchesSearch && matchesStatus;
-      })
-    );
-  }, [search, leads, statusFilter]);
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfToday.getDate() - 6);
+
+  const startOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1
+  );
+
+  setFilteredLeads(
+    leads.filter((lead) => {
+      const matchesSearch = `${lead.name} ${lead.phone} ${lead.email} ${lead.message}`
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all" || lead.status === statusFilter;
+
+      let matchesTime = true;
+
+      if (timeFilter !== "all" && lead.created_at) {
+        const created = new Date(lead.created_at);
+
+        if (timeFilter === "today") {
+          matchesTime = created >= startOfToday;
+        } else if (timeFilter === "week") {
+          matchesTime = created >= startOfWeek;
+        } else if (timeFilter === "month") {
+          matchesTime = created >= startOfMonth;
+        }
+      }
+
+      return matchesSearch && matchesStatus && matchesTime;
+    })
+  );
+}, [search, leads, statusFilter, timeFilter]);
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -424,34 +456,56 @@ const handleDeleteLead = async (id: number) => {
 </div>
 </DndContext>
         <div className="mb-6 rounded-[2rem] border border-white/10 bg-white/[0.04] p-4 shadow-2xl backdrop-blur-xl">
-          <input
-            placeholder="חיפוש לפי שם, טלפון, אימייל או הודעה..."
-            className="mb-4 w-full rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
-            onChange={(e) => setSearch(e.target.value)}
-          />
+  <input
+    placeholder="חיפוש לפי שם, טלפון, אימייל או הודעה..."
+    className="mb-4 w-full rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-orange-500"
+    onChange={(e) => setSearch(e.target.value)}
+  />
 
-          <div className="flex flex-wrap gap-3">
-            {[
-              { key: "all", label: "הכל" },
-              { key: "new", label: "חדש" },
-              { key: "in_progress", label: "בטיפול" },
-              { key: "closed", label: "נסגר" },
-            ].map((item) => (
-              <button
-                key={item.key}
-                onClick={() => setStatusFilter(item.key)}
-                className={`rounded-full px-5 py-2 text-sm font-black transition duration-300 hover:-translate-y-1 active:scale-95 ${
-                  statusFilter === item.key
-                    ? "bg-orange-500 text-black shadow-lg shadow-orange-500/25"
-                    : "bg-white/10 text-white hover:bg-white/20"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
+  <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-4">
+    <div className="flex flex-wrap gap-3">
+      {[
+        { key: "all", label: "הכל" },
+        { key: "new", label: "חדש" },
+        { key: "in_progress", label: "בטיפול" },
+        { key: "closed", label: "נסגר" },
+      ].map((item) => (
+        <button
+          key={item.key}
+          onClick={() => setStatusFilter(item.key)}
+          className={`rounded-full px-5 py-2 text-sm font-black transition duration-300 hover:-translate-y-1 active:scale-95 ${
+            statusFilter === item.key
+              ? "bg-orange-500 text-black shadow-lg shadow-orange-500/25"
+              : "bg-white/10 text-white hover:bg-white/20"
+          }`}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
 
+    <div className="flex flex-wrap gap-3">
+      {[
+        { key: "all", label: "הכל" },
+        { key: "today", label: "היום" },
+        { key: "week", label: "השבוע" },
+        { key: "month", label: "החודש" },
+      ].map((item) => (
+        <button
+          key={item.key}
+          onClick={() => setTimeFilter(item.key)}
+          className={`rounded-full px-5 py-2 text-sm font-black transition duration-300 hover:-translate-y-1 active:scale-95 ${
+            timeFilter === item.key
+              ? "bg-blue-500 text-black shadow-lg shadow-blue-500/25"
+              : "bg-white/10 text-white hover:bg-white/20"
+          }`}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
         <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-2xl backdrop-blur-xl">
           <table className="w-full text-right">
             <thead className="bg-white/[0.06] text-sm text-white/60">
