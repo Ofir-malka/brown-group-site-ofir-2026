@@ -1,24 +1,29 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "דירות למכירה בתל אביב | Brown Group",
+  metadataBase: new URL("https://browngroup.it.com"),
+  title: "דירות למכירה בתל אביב | נכסי יוקרה | Brown Group",
   description:
-    "גלו דירות למכירה בתל אביב עם Brown Group – נכסי יוקרה, פנטהאוזים, דירות חדשות והשקעות נדל״ן עם ליווי אישי מקצועי.",
+    "מחפשים דירה למכירה בתל אביב? Brown Group מציעה דירות יוקרה, פנטהאוזים ונכסים למכירה באזורים המבוקשים בעיר, עם ליווי אישי ומקצועי.",
+  alternates: {
+    canonical: "https://browngroup.it.com/properties/sale",
+  },
+  keywords: [
+    "דירות למכירה בתל אביב",
+    "נכסים למכירה בתל אביב",
+    "נדלן בתל אביב",
+    "נכסי יוקרה בתל אביב",
+    "פנטהאוזים למכירה בתל אביב",
+    "דירות יוקרה למכירה",
+    "Brown Group",
+  ],
   openGraph: {
-    title: "דירות למכירה בתל אביב | Brown Group",
+    title: "דירות למכירה בתל אביב | נכסי יוקרה | Brown Group",
     description:
-      "דירות למכירה בתל אביב עם Brown Group – נכסים יוקרתיים וליווי מקצועי.",
+      "מחפשים דירה למכירה בתל אביב? Brown Group מציעה דירות יוקרה, פנטהאוזים ונכסים למכירה באזורים המבוקשים בעיר, עם ליווי אישי ומקצועי.",
     url: "https://browngroup.it.com/properties/sale",
     siteName: "Brown Group",
     locale: "he_IL",
     type: "website",
   },
 };
-
-export default function SaleLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return children;
-}
