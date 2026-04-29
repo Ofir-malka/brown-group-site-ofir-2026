@@ -49,12 +49,11 @@ alternates: {
 },
 
 icons: {
-  icon: "/icon.png",
-  shortcut: "/icon.png",
+  icon: "/favicon.ico",
+  shortcut: "/favicon.ico",
   apple: "/icon.png",
 },
-
-  verification: {
+verification: {
     google: "Wa_FcKZ5oUluCkLY4piSlJOtjcWBiW3ZUif5ucfmiNk",
   },
   openGraph: {
