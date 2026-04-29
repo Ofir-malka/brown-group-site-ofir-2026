@@ -1,13 +1,24 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "דירות להשכרה בתל אביב | Brown Group",
+  metadataBase: new URL("https://browngroup.it.com"),
+  title: "דירות להשכרה בתל אביב | נכסי יוקרה להשכרה | Brown Group",
   description:
-    "מצאו דירות להשכרה בתל אביב עם Brown Group – נכסים איכותיים, דירות יוקרה, פנטהאוזים וליווי אישי מקצועי.",
+    "מחפשים דירה להשכרה בתל אביב? Brown Group מציעה דירות יוקרה, פנטהאוזים ונכסים להשכרה באזורים המבוקשים בעיר, עם ליווי אישי ושירות מדויק.",
+  alternates: {
+    canonical: "https://browngroup.it.com/properties/rent",
+  },
+  keywords: [
+    "דירות להשכרה בתל אביב",
+    "נכסים להשכרה תל אביב",
+    "פנטהאוז להשכרה תל אביב",
+    "נדלן תל אביב להשכרה",
+    "דירות יוקרה תל אביב",
+  ],
   openGraph: {
-    title: "דירות להשכרה בתל אביב | Brown Group",
+    title: "דירות להשכרה בתל אביב | נכסי יוקרה להשכרה | Brown Group",
     description:
-      "דירות להשכרה בתל אביב עם Brown Group – נכסים איכותיים וליווי מקצועי.",
+      "מחפשים דירה להשכרה בתל אביב? Brown Group מציעה דירות יוקרה, פנטהאוזים ונכסים להשכרה באזורים המבוקשים בעיר, עם ליווי אישי ושירות מדויק.",
     url: "https://browngroup.it.com/properties/rent",
     siteName: "Brown Group",
     locale: "he_IL",

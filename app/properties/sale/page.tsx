@@ -217,9 +217,24 @@ const propertyImagesMap = useMemo(() => {
       (prev) => (prev - 1 + popupImages.length) % popupImages.length
     );
   };
-
+const schemaData = {
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  name: "Brown Group",
+  url: "https://browngroup.it.com",
+  areaServed: {
+    "@type": "City",
+    name: "Tel Aviv",
+  },
+  description: "דירות למכירה בתל אביב ונכסי יוקרה למכירה עם ליווי אישי",
+  telephone: "+972-53-599-4391",
+};
   return (
     <div dir="rtl" className="min-h-screen overflow-x-hidden bg-white text-black">
+      <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+/>
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
           <Link href="/" className="flex min-w-0 items-center gap-3 sm:gap-4">

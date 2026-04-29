@@ -335,7 +335,18 @@ useEffect(() => {
     if (!popupImages.length) return;
     setActivePopupImage((prev) => (prev + 1) % popupImages.length);
   };
-
+const schemaData = {
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  name: "Brown Group",
+  url: "https://browngroup.it.com",
+  areaServed: {
+    "@type": "City",
+    name: "Tel Aviv",
+  },
+  description: "דירות להשכרה בתל אביב ונכסי יוקרה להשכרה עם ליווי אישי",
+  telephone: "+972-53-599-4391",
+};
   const prevPopupImage = () => {
     if (!popupImages.length) return;
     setActivePopupImage(
@@ -345,6 +356,10 @@ useEffect(() => {
 
   return (
     <div dir="rtl" className="min-h-screen overflow-x-hidden bg-white text-black">
+      <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+/>
       <header className="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
           <Link href="/" className="flex min-w-0 items-center gap-3 sm:gap-4">
@@ -464,16 +479,15 @@ useEffect(() => {
             Properties For Rent
           </div>
 
-          <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-6xl">
-            נכסים להשכרה
-            <br />
-            בהתאמה מדויקת יותר
-          </h1>
+   <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-4xl md:text-6xl">
+     דירות להשכרה בתל אביב
+       <br />
+       ונכסי יוקרה להשכרה
+        </h1>
 
-          <p className="mt-5 text-base leading-7 text-neutral-700 sm:mt-6 sm:text-lg sm:leading-8">
-            דירות, משרדים ונכסי יוקרה להשכרה בתל אביב, עם תהליך מסודר, התאמה
-            אישית ושירות ברמה גבוהה לאורך כל הדרך.
-          </p>
+     <p className="mt-5 text-base leading-7 text-neutral-700 sm:mt-6 sm:text-lg sm:leading-8">
+       מחפשים דירה להשכרה בתל אביב? Brown Group מציעה דירות יוקרה, פנטהאוזים ונכסים להשכרה באזורים המבוקשים בעיר, עם התאמה אישית, ליווי צמוד ושירות ברמה גבוהה לאורך כל הדרך.
+      </p>
         </motion.div>
 
         <motion.div
@@ -542,7 +556,14 @@ useEffect(() => {
             </div>
           </div>
         </motion.div>
-
+<div className="mt-10 max-w-3xl text-right">
+  <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+    דירות להשכרה בתל אביב עם ליווי אישי
+  </h2>
+  <p className="mt-3 text-sm leading-7 text-neutral-600 sm:text-base sm:leading-8">
+    בין אם אתם מחפשים דירת יוקרה להשכרה בתל אביב, פנטהאוז עם נוף לים או נכס להשכרה באזור מבוקש בעיר, הצוות של Brown Group מסייע לכם למצוא נכס שמתאים לצרכים, לתקציב ולסגנון החיים שלכם.
+  </p>
+</div>
         <div className="mt-10 grid gap-5 sm:mt-14 sm:gap-7 md:grid-cols-2 xl:grid-cols-3">
           {rentProperties.map((property, index) => {
             const safeImages = propertyImagesMap[property.id] || [];
