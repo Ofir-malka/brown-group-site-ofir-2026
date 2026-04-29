@@ -470,7 +470,7 @@ const schemaData = {
 
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
         <motion.div
-          className="mr-auto max-w-3xl text-right"
+          className="mx-auto max-w-3xl text-right px-4 lg:mr-0 lg:ml-auto"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
