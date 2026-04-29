@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
 
+export default function Layout({
+
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <>{children}</>
+}
 export const metadata: Metadata = {
   metadataBase: new URL("https://browngroup.it.com"),
   title: "דירות למכירה בתל אביב | נכסי יוקרה | Brown Group",
